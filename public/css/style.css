@@ -1,0 +1,22 @@
+/* Root CSS variables for theming */
+:root {
+  --primary-bg: #fff;
+  --primary-text: #222;
+  --accent: #4f8cff;
+  --border-radius: 8px;
+  --transition: 0.3s;
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: var(--primary-bg);
+  color: var(--primary-text);
+  transition: background var(--transition), color var(--transition);
+}
+
+#app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
