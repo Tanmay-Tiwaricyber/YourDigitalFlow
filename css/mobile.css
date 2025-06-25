@@ -1,0 +1,603 @@
+/* ======= Mobile Styles for Your Digital Flow ======= */
+
+/* Mobile-first approach - styles for screens 768px and below */
+
+/* ======= Mobile Variables ======= */
+:root {
+    --mobile-header-height: 50px;
+    --mobile-sidebar-width: 100%;
+    --mobile-border-radius: 6px;
+    --mobile-padding: 0.75rem;
+    --mobile-margin: 0.5rem;
+    --mobile-font-size-small: 0.875rem;
+    --mobile-font-size-normal: 1rem;
+    --mobile-font-size-large: 1.25rem;
+    --mobile-touch-target: 44px;
+}
+
+/* ======= Mobile Layout Overrides ======= */
+@media (max-width: 768px) {
+    /* Hide desktop elements on mobile */
+    .mobile-hidden {
+        display: none !important;
+    }
+    
+    /* Show mobile-only elements */
+    .mobile-only {
+        display: block !important;
+    }
+    
+    /* Touch-friendly interactions */
+    .touch-friendly {
+        min-height: var(--mobile-touch-target);
+        min-width: var(--mobile-touch-target);
+    }
+    
+    /* Mobile spacing utilities */
+    .mobile-p-0 { padding: 0 !important; }
+    .mobile-p-1 { padding: 0.25rem !important; }
+    .mobile-p-2 { padding: 0.5rem !important; }
+    .mobile-p-3 { padding: 0.75rem !important; }
+    .mobile-p-4 { padding: 1rem !important; }
+    
+    .mobile-m-0 { margin: 0 !important; }
+    .mobile-m-1 { margin: 0.25rem !important; }
+    .mobile-m-2 { margin: 0.5rem !important; }
+    .mobile-m-3 { margin: 0.75rem !important; }
+    .mobile-m-4 { margin: 1rem !important; }
+    
+    /* Text truncation for mobile */
+    .mobile-truncate {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+    }
+    
+    /* ======= Mobile Header ======= */
+    .header {
+        height: var(--mobile-header-height);
+        padding: 0 var(--mobile-padding);
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        background-color: var(--background-primary);
+        border-bottom: 1px solid var(--border-color);
+        box-shadow: 0 2px 4px var(--shadow-color);
+    }
+    
+    .header h1 {
+        font-size: var(--mobile-font-size-large);
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .header-controls {
+        gap: var(--mobile-margin);
+    }
+    
+    .profile-btn {
+        padding: var(--mobile-padding);
+        min-height: var(--mobile-touch-target);
+    }
+    
+    .profile-btn span {
+        display: none; /* Hide email on mobile */
+    }
+    
+    .profile-avatar {
+        width: 28px;
+        height: 28px;
+        font-size: 0.875rem;
+    }
+    
+    /* ======= Mobile Content Layout ======= */
+    .content {
+        flex-direction: column;
+        margin-top: var(--mobile-header-height);
+        height: calc(100vh - var(--mobile-header-height) - 60px); /* Account for bottom nav */
+    }
+    
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        padding: var(--mobile-padding);
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+        background-color: var(--background-primary);
+    }
+    
+    .main-content {
+        flex: 1;
+        width: 100%;
+        padding: var(--mobile-padding);
+        overflow-y: auto;
+    }
+    
+    /* ======= Mobile Calendar ======= */
+    .calendar-container {
+        margin-bottom: var(--mobile-margin);
+    }
+    
+    .calendar-header {
+        padding: var(--mobile-padding);
+        gap: var(--mobile-margin);
+    }
+    
+    .calendar-header h2 {
+        font-size: var(--mobile-font-size-normal);
+        flex: 1;
+        text-align: center;
+    }
+    
+    .calendar-header .btn-icon {
+        width: 36px;
+        height: 36px;
+        min-height: var(--mobile-touch-target);
+    }
+    
+    .weekdays {
+        font-size: var(--mobile-font-size-small);
+        padding: var(--mobile-padding) 0;
+    }
+    
+    .calendar-days {
+        gap: 2px;
+        padding: var(--mobile-padding) 0;
+    }
+    
+    .day {
+        width: 36px;
+        height: 36px;
+        min-height: var(--mobile-touch-target);
+        font-size: var(--mobile-font-size-small);
+        border-radius: var(--mobile-border-radius);
+    }
+    
+    /* ======= Mobile Search ======= */
+    .search-container {
+        margin-bottom: var(--mobile-margin);
+    }
+    
+    .search-container input {
+        height: 40px;
+        min-height: var(--mobile-touch-target);
+    }
+    
+    .search-container .btn-icon {
+        width: 40px;
+        height: 40px;
+        min-height: var(--mobile-touch-target);
+    }
+    
+    /* ======= Mobile Timeline ======= */
+    .timeline-header {
+        padding: var(--mobile-padding) 0;
+        margin-bottom: var(--mobile-margin);
+    }
+    
+    .timeline-header h2 {
+        font-size: var(--mobile-font-size-large);
+    }
+    
+    .timeline-notes {
+        padding: 0;
+    }
+    
+    .timeline-notes:before {
+        left: 20px;
+    }
+    
+    .timeline-note {
+        margin-bottom: var(--mobile-margin);
+        padding: var(--mobile-padding);
+    }
+    
+    .timeline-note:before {
+        left: 15px;
+        width: 10px;
+        height: 10px;
+    }
+    
+    .timeline-note .note-time {
+        font-size: var(--mobile-font-size-small);
+    }
+    
+    .timeline-note .note-content {
+        margin-left: 30px;
+    }
+    
+    /* ======= Mobile Forms ======= */
+    .note-form {
+        padding: var(--mobile-padding);
+    }
+    
+    .form-row {
+        flex-direction: column;
+        gap: var(--mobile-margin);
+    }
+    
+    .time-input, .mood-input {
+        width: 100%;
+    }
+    
+    .mood-selector {
+        flex-wrap: wrap;
+        gap: var(--mobile-margin);
+    }
+    
+    .mood-option {
+        flex: 1;
+        min-width: 80px;
+        min-height: var(--mobile-touch-target);
+        padding: var(--mobile-padding);
+    }
+    
+    .image-upload-container {
+        flex-direction: column;
+        gap: var(--mobile-margin);
+    }
+    
+    .image-upload {
+        width: 100%;
+        height: 120px;
+    }
+    
+    /* ======= Mobile Buttons ======= */
+    .btn, .calendar-day, .profile-btn, .note-form button {
+        min-height: var(--mobile-touch-target);
+        font-size: var(--mobile-font-size-normal);
+    }
+    
+    .btn:active, .calendar-day:active, .profile-btn:active, .note-form button:active {
+        transform: scale(0.95);
+    }
+    
+    /* ======= Mobile Bottom Navigation ======= */
+    .bottom-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 60px;
+        background-color: var(--background-primary);
+        border-top: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        z-index: 1000;
+        box-shadow: 0 -2px 4px var(--shadow-color);
+    }
+    
+    .nav-btn {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: var(--mobile-padding);
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        min-height: 60px;
+    }
+    
+    .nav-btn.active {
+        color: var(--primary-color);
+    }
+    
+    .nav-btn i {
+        font-size: 1.25rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    .nav-btn span {
+        font-size: var(--mobile-font-size-small);
+    }
+    
+    /* ======= Mobile Modals ======= */
+    .modal-content {
+        width: 95%;
+        max-width: none;
+        margin: 20px auto;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+    
+    .modal-header {
+        padding: var(--mobile-padding);
+    }
+    
+    .modal-body {
+        padding: var(--mobile-padding);
+    }
+    
+    .modal-footer {
+        padding: var(--mobile-padding);
+    }
+    
+    /* ======= Mobile Profile Dropdown ======= */
+    .profile-dropdown-content {
+        width: 200px;
+        right: -10px;
+    }
+    
+    .profile-dropdown-content:before {
+        content: '';
+        position: absolute;
+        top: -8px;
+        right: 20px;
+        width: 0;
+        height: 0;
+        border-left: 8px solid transparent;
+        border-right: 8px solid transparent;
+        border-bottom: 8px solid var(--background-primary);
+    }
+    
+    .profile-dropdown-content a {
+        padding: var(--mobile-padding) 1rem;
+        min-height: var(--mobile-touch-target);
+    }
+    
+    /* ======= Mobile Auth ======= */
+    .auth-container {
+        padding: var(--mobile-padding);
+        min-height: 100vh;
+    }
+    
+    .auth-box {
+        padding: var(--mobile-padding);
+        margin: var(--mobile-margin);
+    }
+    
+    .auth-box h1 {
+        font-size: var(--mobile-font-size-large);
+    }
+    
+    /* ======= Mobile Loading ======= */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 9999;
+    }
+    
+    /* ======= Mobile Search Results ======= */
+    .search-results {
+        padding: var(--mobile-padding);
+    }
+    
+    .result-item {
+        padding: var(--mobile-padding);
+        margin-bottom: var(--mobile-margin);
+    }
+    
+    /* ======= Mobile Export ======= */
+    .export-container {
+        padding: var(--mobile-padding);
+    }
+    
+    .export-container .btn {
+        width: 100%;
+        min-height: var(--mobile-touch-target);
+    }
+}
+
+/* ======= Extra Small Mobile Devices ======= */
+@media (max-width: 480px) {
+    :root {
+        --mobile-padding: 0.5rem;
+        --mobile-margin: 0.25rem;
+        --mobile-font-size-small: 0.8rem;
+        --mobile-font-size-normal: 0.9rem;
+        --mobile-font-size-large: 1.1rem;
+    }
+    
+    .profile-avatar {
+        width: 24px;
+        height: 24px;
+        font-size: 0.75rem;
+    }
+    
+    .profile-dropdown-content {
+        width: 180px;
+        right: -15px;
+    }
+    
+    #profile-modal .modal-content {
+        width: 98%;
+        margin: 10px auto;
+    }
+    
+    .profile-info {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .profile-avatar-large {
+        width: 70px;
+        height: 70px;
+        font-size: 2rem;
+        margin: 0 auto var(--mobile-margin) auto;
+    }
+    
+    .profile-details {
+        margin-top: var(--mobile-margin);
+    }
+    
+    .calendar-header h2 {
+        font-size: var(--mobile-font-size-normal);
+    }
+    
+    .day {
+        width: 32px;
+        height: 32px;
+        font-size: 0.8rem;
+    }
+    
+    .timeline-note {
+        padding: var(--mobile-padding);
+    }
+    
+    .timeline-note .note-content {
+        margin-left: 25px;
+    }
+    
+    .mood-option {
+        min-width: 70px;
+        padding: 0.5rem;
+        font-size: var(--mobile-font-size-small);
+    }
+    
+    .mood-option i {
+        font-size: 1rem;
+    }
+    
+    .mood-option span {
+        font-size: 0.7rem;
+    }
+}
+
+/* ======= Mobile Landscape Orientation ======= */
+@media (max-width: 768px) and (orientation: landscape) {
+    .header {
+        height: 40px;
+    }
+    
+    .content {
+        margin-top: 40px;
+        height: calc(100vh - 40px - 50px);
+    }
+    
+    .bottom-nav {
+        height: 50px;
+    }
+    
+    .nav-btn {
+        min-height: 50px;
+    }
+    
+    .nav-btn i {
+        font-size: 1rem;
+        margin-bottom: 0.1rem;
+    }
+    
+    .nav-btn span {
+        font-size: 0.7rem;
+    }
+    
+    .sidebar {
+        max-height: 40vh;
+        overflow-y: auto;
+    }
+    
+    .main-content {
+        max-height: 60vh;
+    }
+}
+
+/* ======= Mobile Touch Interactions ======= */
+@media (hover: none) and (pointer: coarse) {
+    /* Remove hover effects on touch devices */
+    .btn:hover,
+    .profile-btn:hover,
+    .nav-btn:hover,
+    .mood-option:hover,
+    .day:hover,
+    .timeline-note:hover,
+    .result-item:hover {
+        transform: none;
+        background-color: inherit;
+    }
+    
+    /* Add active states for touch */
+    .btn:active,
+    .profile-btn:active,
+    .nav-btn:active,
+    .mood-option:active,
+    .day:active,
+    .timeline-note:active,
+    .result-item:active {
+        transform: scale(0.95);
+        opacity: 0.8;
+    }
+    
+    /* Improve touch targets */
+    input, textarea, select {
+        min-height: var(--mobile-touch-target);
+        font-size: 16px; /* Prevents zoom on iOS */
+    }
+}
+
+/* ======= Mobile Animations ======= */
+@media (max-width: 768px) {
+    .timeline-note {
+        animation: slideInUp 0.3s ease-out;
+    }
+    
+    .modal.show .modal-content {
+        animation: slideInUp 0.3s ease-out;
+    }
+    
+    .profile-dropdown-content.show {
+        animation: slideInDown 0.3s ease-out;
+    }
+    
+    @keyframes slideInUp {
+        from {
+            transform: translateY(20px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes slideInDown {
+        from {
+            transform: translateY(-10px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+}
+
+/* ======= Mobile Accessibility ======= */
+@media (max-width: 768px) {
+    /* Ensure sufficient color contrast */
+    .btn, .nav-btn, .profile-btn {
+        color: var(--text-primary);
+    }
+    
+    /* Focus indicators for mobile */
+    .btn:focus,
+    .nav-btn:focus,
+    .profile-btn:focus,
+    input:focus,
+    textarea:focus {
+        outline: 2px solid var(--primary-color);
+        outline-offset: 2px;
+    }
+    
+    /* Reduce motion for users who prefer it */
+    @media (prefers-reduced-motion: reduce) {
+        * {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+        }
+    }
+} 

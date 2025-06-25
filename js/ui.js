@@ -33,6 +33,9 @@ const UI = {
         
         // Show today's timeline or empty view
         this.loadDate(Utils.formatDate(this.selectedDate));
+        
+        // Set initial mobile navigation state
+        this.updateMobileNavActive('nav-timeline');
     },
     
     /**
@@ -60,14 +63,107 @@ const UI = {
         document.getElementById('note-image-2').addEventListener('change', (e) => this.handleImageUpload(e, 1));
         
         // Image removal
-        document.getElementById('remove-image-1').addEventLis
-        tener('click', () => this.removeImage(0));
+        document.getElementById('remove-image-1').addEventListener('click', () => this.removeImage(0));
         document.getElementById('remove-image-2').addEventListener('click', () => this.removeImage(1));
         
         // Mood selection
         document.querySelectorAll('.mood-option').forEach(element => {
             element.addEventListener('click', () => this.selectMood(element.dataset.mood));
         });
+        
+        // Mobile bottom navigation
+        this.setupMobileNavigation();
+    },
+    
+    /**
+     * Set up mobile bottom navigation event listeners
+     */
+    setupMobileNavigation() {
+        const navTimeline = document.getElementById('nav-timeline');
+        const navAddNote = document.getElementById('nav-add-note');
+        const navProfile = document.getElementById('nav-profile');
+        
+        if (navTimeline) {
+            navTimeline.addEventListener('click', () => this.showTimelineView());
+        }
+        
+        if (navAddNote) {
+            navAddNote.addEventListener('click', () => this.showAddNoteView());
+        }
+        
+        if (navProfile) {
+            navProfile.addEventListener('click', () => this.showProfileView());
+        }
+    },
+    
+    /**
+     * Show timeline view (main view)
+     */
+    showTimelineView() {
+        // Update navigation active state
+        this.updateMobileNavActive('nav-timeline');
+        
+        // Show timeline container
+        document.getElementById('timeline-container').classList.remove('hidden');
+        document.getElementById('no-entry-message').classList.add('hidden');
+        document.getElementById('search-results').classList.add('hidden');
+        
+        // Scroll to top of timeline
+        const timelineContainer = document.getElementById('timeline-container');
+        if (timelineContainer) {
+            timelineContainer.scrollTop = 0;
+        }
+    },
+    
+    /**
+     * Show add note view
+     */
+    showAddNoteView() {
+        // Update navigation active state
+        this.updateMobileNavActive('nav-add-note');
+        
+        // Show timeline container (which contains the add note form)
+        document.getElementById('timeline-container').classList.remove('hidden');
+        document.getElementById('no-entry-message').classList.add('hidden');
+        document.getElementById('search-results').classList.add('hidden');
+        
+        // Scroll to add note section
+        const addNoteSection = document.querySelector('.add-note-section');
+        if (addNoteSection) {
+            addNoteSection.scrollIntoView({ behavior: 'smooth' });
+        }
+    },
+    
+    /**
+     * Show profile view
+     */
+    showProfileView() {
+        // Update navigation active state
+        this.updateMobileNavActive('nav-profile');
+        
+        // Show profile modal
+        const profileModal = document.getElementById('profile-modal');
+        if (profileModal) {
+            profileModal.classList.remove('hidden');
+            profileModal.classList.add('show');
+        }
+    },
+    
+    /**
+     * Update mobile navigation active state
+     * @param {string} activeId - ID of the active navigation button
+     */
+    updateMobileNavActive(activeId) {
+        // Remove active class from all nav buttons
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        // Add active class to the clicked button
+        const activeBtn = document.getElementById(activeId);
+        if (activeBtn) {
+            activeBtn.classList.add('active');
+        }
     },
     
     /**
@@ -184,6 +280,9 @@ const UI = {
             document.getElementById('no-entry-message').classList.add('hidden');
             document.getElementById('timeline-container').classList.remove('hidden');
             document.getElementById('search-results').classList.add('hidden');
+            
+            // Update mobile navigation to show timeline view
+            this.updateMobileNavActive('nav-timeline');
         } catch (error) {
             console.error('Error loading timeline:', error);
             Utils.showToast("There was an error loading your notes", "error");
