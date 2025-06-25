@@ -900,18 +900,20 @@ document.addEventListener('DOMContentLoaded', function() {
     const timelineContainer = document.getElementById('timeline-container');
 
     function showSection(section) {
+        // Always hide all modals when switching sections
+        if (profileModal) profileModal.classList.add('hidden');
+        const appInfoModal = document.getElementById('app-info-modal');
+        if (appInfoModal) appInfoModal.classList.add('hidden');
         if (section === 'timeline') {
             timelineContainer.classList.remove('hidden');
             addNoteSection.classList.add('hidden');
-            profileModal.classList.add('hidden');
         } else if (section === 'add-note') {
             timelineContainer.classList.remove('hidden');
             addNoteSection.classList.remove('hidden');
-            profileModal.classList.add('hidden');
             // Scroll to add note section
             addNoteSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
         } else if (section === 'profile') {
-            profileModal.classList.remove('hidden');
+            if (profileModal) profileModal.classList.remove('hidden');
             timelineContainer.classList.add('hidden');
             addNoteSection.classList.add('hidden');
         }
@@ -925,27 +927,41 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    if (bottomNav && navTimeline && navAddNote && navProfile) {
-        navTimeline.addEventListener('click', function() {
-            showSection('timeline');
-            navTimeline.classList.add('active');
-            navAddNote.classList.remove('active');
-            navProfile.classList.remove('active');
-        });
-        navAddNote.addEventListener('click', function() {
-            showSection('add-note');
-            navTimeline.classList.remove('active');
-            navAddNote.classList.add('active');
-            navProfile.classList.remove('active');
-        });
-        navProfile.addEventListener('click', async function() {
-            // Show profile modal and load data
-            await loadProfile();
-            profileModal.classList.remove('hidden');
-            navTimeline.classList.remove('active');
-            navAddNote.classList.remove('active');
-            navProfile.classList.add('active');
-        });
+    if (bottomNav) {
+        if (navTimeline) {
+            navTimeline.addEventListener('click', function() {
+                console.log('Timeline button clicked');
+                showSection('timeline');
+                navTimeline.classList.add('active');
+                if (navAddNote) navAddNote.classList.remove('active');
+                if (navProfile) navProfile.classList.remove('active');
+                // Scroll to timeline header on mobile for better UX
+                if (isMobile()) {
+                    const timelineHeader = document.querySelector('.timeline-header');
+                    if (timelineHeader) {
+                        timelineHeader.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                }
+            });
+        }
+        if (navAddNote) {
+            navAddNote.addEventListener('click', function() {
+                showSection('add-note');
+                if (navTimeline) navTimeline.classList.remove('active');
+                navAddNote.classList.add('active');
+                if (navProfile) navProfile.classList.remove('active');
+            });
+        }
+        if (navProfile) {
+            navProfile.addEventListener('click', async function() {
+                // Show profile modal and load data
+                await loadProfile();
+                profileModal.classList.remove('hidden');
+                if (navTimeline) navTimeline.classList.remove('active');
+                if (navAddNote) navAddNote.classList.remove('active');
+                navProfile.classList.add('active');
+            });
+        }
     }
 
     window.addEventListener('resize', updateBottomNavVisibility);
@@ -1081,20 +1097,37 @@ document.addEventListener('DOMContentLoaded', function() {
     const navAppInfo = document.getElementById('nav-app-info');
     const appInfoModal = document.getElementById('app-info-modal');
     const closeAppInfoBtn = document.getElementById('close-app-info-modal');
-
+    // Desktop: App Info in profile dropdown
+    const viewAppInfoBtn = document.getElementById('view-app-info-btn');
+    if (viewAppInfoBtn && appInfoModal) {
+        viewAppInfoBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            appInfoModal.classList.remove('hidden');
+            appInfoModal.classList.add('show');
+            // Optionally close the dropdown
+            const dropdown = document.querySelector('.profile-dropdown-content');
+            if (dropdown) dropdown.classList.remove('show');
+        });
+    }
     if (navAppInfo && appInfoModal) {
         navAppInfo.addEventListener('click', function() {
+            console.log('App Info button clicked');
+            // Hide other modals
+            if (profileModal) profileModal.classList.add('hidden');
             appInfoModal.classList.remove('hidden');
+            appInfoModal.classList.add('show');
         });
     }
     if (closeAppInfoBtn && appInfoModal) {
         closeAppInfoBtn.addEventListener('click', function() {
+            appInfoModal.classList.remove('show');
             appInfoModal.classList.add('hidden');
         });
     }
     if (appInfoModal) {
         appInfoModal.addEventListener('click', function(e) {
             if (e.target === appInfoModal) {
+                appInfoModal.classList.remove('show');
                 appInfoModal.classList.add('hidden');
             }
         });
