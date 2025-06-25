@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <title>Mobile CSS Test - Your Digital Flow</title>
+    <link rel="stylesheet" href="./css/styles.css">
+    <link rel="stylesheet" href="./css/profile-styles.css">
+    <link rel="stylesheet" href="./css/mobile.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .test-container {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .test-title {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        .mobile-indicator {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: #4a90e2;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            z-index: 9999;
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-indicator" id="mobile-indicator">
+        Desktop View
+    </div>
+    
+    <div class="test-container">
+        <h1>Mobile CSS Test</h1>
+        <p>Resize your browser window to test mobile responsiveness. The indicator in the top-right will show the current view mode.</p>
+        
+        <div class="test-section">
+            <h2 class="test-title">Header Test</h2>
+            <div class="header">
+                <div class="logo-container">
+                    <h1 class="app-logo">Your Digital Flow</h1>
+                </div>
+                <div class="header-controls">
+                    <button class="btn btn-icon" aria-label="Toggle theme">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <div class="user-profile">
+                        <div class="profile-dropdown">
+                            <button class="profile-btn" aria-label="User profile">
+                                <div class="profile-avatar">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <span class="user-email-display">user@example.com</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2 class="test-title">Calendar Test</h2>
+            <div class="calendar-container">
+                <div class="calendar-header">
+                    <button class="btn btn-icon" aria-label="Previous month"><i class="fas fa-chevron-left"></i></button>
+                    <h2>June 2023</h2>
+                    <button class="btn btn-icon" aria-label="Next month"><i class="fas fa-chevron-right"></i></button>
+                </div>
+                <div class="weekdays">
+                    <div>Su</div><div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div>
+                </div>
+                <div class="calendar-days">
+                    <div class="day padding">28</div>
+                    <div class="day padding">29</div>
+                    <div class="day padding">30</div>
+                    <div class="day padding">31</div>
+                    <div class="day">1</div>
+                    <div class="day">2</div>
+                    <div class="day">3</div>
+                    <div class="day">4</div>
+                    <div class="day">5</div>
+                    <div class="day">6</div>
+                    <div class="day">7</div>
+                    <div class="day">8</div>
+                    <div class="day">9</div>
+                    <div class="day">10</div>
+                    <div class="day">11</div>
+                    <div class="day">12</div>
+                    <div class="day">13</div>
+                    <div class="day">14</div>
+                    <div class="day">15</div>
+                    <div class="day">16</div>
+                    <div class="day">17</div>
+                    <div class="day">18</div>
+                    <div class="day">19</div>
+                    <div class="day">20</div>
+                    <div class="day">21</div>
+                    <div class="day">22</div>
+                    <div class="day">23</div>
+                    <div class="day">24</div>
+                    <div class="day">25</div>
+                    <div class="day">26</div>
+                    <div class="day">27</div>
+                    <div class="day">28</div>
+                    <div class="day">29</div>
+                    <div class="day">30</div>
+                    <div class="day padding">1</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2 class="test-title">Form Elements Test</h2>
+            <div class="form-group">
+                <label for="test-input">Test Input</label>
+                <input type="text" id="test-input" placeholder="Enter text...">
+            </div>
+            <div class="form-group">
+                <label for="test-textarea">Test Textarea</label>
+                <textarea id="test-textarea" placeholder="Enter text..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>Mood Selector</label>
+                <div class="mood-selector">
+                    <div class="mood-option" data-mood="happy">
+                        <i class="fas fa-grin"></i>
+                        <span>Happy</span>
+                    </div>
+                    <div class="mood-option" data-mood="neutral">
+                        <i class="fas fa-meh"></i>
+                        <span>Neutral</span>
+                    </div>
+                    <div class="mood-option" data-mood="sad">
+                        <i class="fas fa-frown"></i>
+                        <span>Sad</span>
+                    </div>
+                </div>
+            </div>
+            <button class="btn btn-primary">Test Button</button>
+        </div>
+        
+        <div class="test-section">
+            <h2 class="test-title">Bottom Navigation Test</h2>
+            <div class="bottom-nav">
+                <button class="nav-btn active">
+                    <i class="fas fa-stream"></i>
+                    <span>Timeline</span>
+                </button>
+                <button class="nav-btn">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>Add Note</span>
+                </button>
+                <button class="nav-btn">
+                    <i class="fas fa-user"></i>
+                    <span>Profile</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Update mobile indicator
+        function updateMobileIndicator() {
+            const indicator = document.getElementById('mobile-indicator');
+            const width = window.innerWidth;
+            
+            if (width <= 480) {
+                indicator.textContent = 'Mobile (Small)';
+                indicator.style.background = '#e74c3c';
+            } else if (width <= 768) {
+                indicator.textContent = 'Mobile';
+                indicator.style.background = '#f39c12';
+            } else {
+                indicator.textContent = 'Desktop';
+                indicator.style.background = '#4a90e2';
+            }
+        }
+        
+        // Update on load and resize
+        window.addEventListener('load', updateMobileIndicator);
+        window.addEventListener('resize', updateMobileIndicator);
+        
+        // Test mood selector
+        document.querySelectorAll('.mood-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.mood-option').forEach(opt => opt.classList.remove('selected'));
+                this.classList.add('selected');
+            });
+        });
+        
+        // Test navigation buttons
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html> 
