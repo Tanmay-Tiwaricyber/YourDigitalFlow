@@ -1,3 +1,187 @@
+/* ======= Professional Mobile Theme for Your Digital Flow ======= */
+
+:root {
+    --mobile-primary: #2563eb;
+    --mobile-secondary: #38bdf8;
+    --mobile-accent: #fbbf24;
+    --mobile-danger: #ef4444;
+    --mobile-text-primary: #1e293b;
+    --mobile-text-secondary: #64748b;
+    --mobile-bg: #f1f5f9;
+    --mobile-bg-elevated: #fff;
+    --mobile-glass: rgba(255,255,255,0.8);
+    --mobile-border: #cbd5e1;
+    --mobile-shadow: 0 4px 24px rgba(30,41,59,0.10);
+    --mobile-radius-md: 14px;
+    --mobile-radius-xl: 28px;
+    --mobile-space-4: 1.1rem;
+    --mobile-space-6: 1.7rem;
+    --mobile-transition: 0.18s;
+}
+
+@media (max-width: 768px) {
+    body {
+        background: linear-gradient(120deg, #f1f5f9 0%, #e0e7ef 100%);
+        color: var(--mobile-text-primary);
+    }
+    .app {
+        min-height: 100vh;
+        background: none;
+    }
+    .header {
+        height: 60px;
+        background: var(--mobile-glass);
+        border-bottom: 1px solid var(--mobile-border);
+        box-shadow: var(--mobile-shadow);
+        border-radius: 0 0 var(--mobile-radius-xl) var(--mobile-radius-xl);
+        margin-bottom: var(--mobile-space-4);
+        backdrop-filter: blur(12px);
+        padding: 0 var(--mobile-space-4);
+    }
+    .app-logo, .header h1 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--mobile-primary);
+        background: linear-gradient(90deg, var(--mobile-primary), var(--mobile-secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    .sidebar {
+        width: 100%;
+        background: var(--mobile-glass);
+        border-radius: var(--mobile-radius-xl);
+        box-shadow: var(--mobile-shadow);
+        margin: var(--mobile-space-4) 0;
+        padding: var(--mobile-space-6) var(--mobile-space-4);
+        border: 1px solid var(--mobile-border);
+        backdrop-filter: blur(12px);
+    }
+    .main-content {
+        background: var(--mobile-bg);
+        border-radius: var(--mobile-radius-xl);
+        box-shadow: var(--mobile-shadow);
+        padding: var(--mobile-space-6) var(--mobile-space-4);
+        margin: var(--mobile-space-4) 0;
+        min-width: 0;
+    }
+    .calendar-container, .search-container, .export-container {
+        background: var(--mobile-bg-elevated);
+        border-radius: var(--mobile-radius-md);
+        box-shadow: 0 2px 8px rgba(30,41,59,0.08);
+        padding: var(--mobile-space-4);
+        margin-bottom: var(--mobile-space-4);
+    }
+    .calendar-header h2 {
+        font-size: 1.1rem;
+        color: var(--mobile-primary);
+        font-weight: 700;
+    }
+    .btn, .btn-outline, .btn-primary, .btn-danger {
+        border-radius: var(--mobile-radius-md);
+        font-size: 1.05rem;
+        padding: 0.8rem 1.4rem;
+        transition: background var(--mobile-transition), color var(--mobile-transition), box-shadow var(--mobile-transition), transform var(--mobile-transition);
+        box-shadow: 0 2px 8px rgba(30,41,59,0.08);
+        font-weight: 600;
+        outline: none;
+    }
+    .btn:focus, .btn-outline:focus, .btn-primary:focus, .btn-danger:focus {
+        outline: 2px solid var(--mobile-primary);
+        outline-offset: 2px;
+    }
+    .btn:active, .btn-outline:active, .btn-primary:active, .btn-danger:active {
+        background: var(--mobile-primary);
+        color: #fff;
+        transform: scale(0.97);
+        box-shadow: 0 4px 16px rgba(30,41,59,0.12);
+    }
+    .profile-dropdown-content {
+        border-radius: var(--mobile-radius-md);
+        box-shadow: 0 2px 8px rgba(30,41,59,0.08);
+        background: var(--mobile-bg-elevated);
+    }
+    .modal-content {
+        border-radius: var(--mobile-radius-xl);
+        box-shadow: 0 8px 32px rgba(30,41,59,0.12);
+        background: var(--mobile-bg-elevated);
+        padding: var(--mobile-space-6);
+    }
+    .timeline-header h2 {
+        font-size: 1.2rem;
+        color: var(--mobile-primary);
+        font-weight: 700;
+    }
+    .timeline-note {
+        background: var(--mobile-bg-elevated);
+        border-radius: var(--mobile-radius-md);
+        box-shadow: 0 2px 8px rgba(30,41,59,0.08);
+        margin-bottom: var(--mobile-space-4);
+        padding: var(--mobile-space-4);
+        transition: box-shadow var(--mobile-transition), transform var(--mobile-transition);
+    }
+    .timeline-note:active {
+        box-shadow: 0 4px 16px rgba(30,41,59,0.12);
+        transform: scale(0.98);
+    }
+    .add-note-section {
+        background: var(--mobile-bg-elevated);
+        border-radius: var(--mobile-radius-md);
+        box-shadow: 0 2px 8px rgba(30,41,59,0.08);
+        padding: var(--mobile-space-4);
+        margin-top: var(--mobile-space-6);
+    }
+    .note-form input, .note-form textarea {
+        border-radius: var(--mobile-radius-md);
+        border: 1px solid var(--mobile-border);
+        padding: 0.8rem 1rem;
+        font-size: 1.05rem;
+        background: #fff;
+        margin-bottom: 1rem;
+        transition: border-color var(--mobile-transition);
+    }
+    .note-form input:focus, .note-form textarea:focus {
+        border-color: var(--mobile-primary);
+        outline: none;
+    }
+    .mood-selector {
+        gap: 1rem;
+    }
+    .mood-option {
+        border-radius: var(--mobile-radius-md);
+        background: var(--mobile-bg-elevated);
+        box-shadow: 0 1px 4px rgba(30,41,59,0.08);
+        padding: 0.5rem 1rem;
+        transition: background var(--mobile-transition), color var(--mobile-transition);
+    }
+    .mood-option.selected, .mood-option:active {
+        background: var(--mobile-primary);
+        color: #fff;
+    }
+    .image-upload-container {
+        gap: 1rem;
+    }
+    .image-upload {
+        border-radius: var(--mobile-radius-md);
+        background: var(--mobile-bg-elevated);
+        box-shadow: 0 1px 4px rgba(30,41,59,0.08);
+    }
+    .bottom-nav {
+        background: var(--mobile-glass);
+        border-radius: var(--mobile-radius-xl) var(--mobile-radius-xl) 0 0;
+        box-shadow: 0 -2px 12px rgba(30,41,59,0.10);
+        backdrop-filter: blur(12px);
+    }
+    /* Hide desktop-only elements */
+    .desktop-only {
+        display: none !important;
+    }
+    /* Show mobile elements */
+    .mobile-only {
+        display: block !important;
+    }
+}
+
 /* ======= Mobile Styles for Your Digital Flow ======= */
 
 /* Mobile-first approach - styles for screens 768px and below */
