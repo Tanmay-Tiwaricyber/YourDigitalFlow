@@ -329,6 +329,28 @@ const DB = {
             exportDate: new Date().toISOString(),            userId: this.userId,
             entries: this.getAllEntries()
         };
+    },
+    
+    /**
+     * Save user profile data to RTDB
+     * @param {Object} profile - {name, age, hobby, note, email, created}
+     * @returns {Promise<void>}
+     */
+    async saveUserProfile(profile) {
+        if (!this.database || !this.userId) throw new Error('Not connected to database');
+        const ref = this.database.ref(`users/${this.userId}/profile`);
+        await ref.set(profile);
+    },
+    
+    /**
+     * Get user profile data from RTDB
+     * @returns {Promise<Object>} profile object or {}
+     */
+    async getUserProfile() {
+        if (!this.database || !this.userId) throw new Error('Not connected to database');
+        const ref = this.database.ref(`users/${this.userId}/profile`);
+        const snap = await ref.once('value');
+        return snap.exists() ? snap.val() : {};
     }
 };
 

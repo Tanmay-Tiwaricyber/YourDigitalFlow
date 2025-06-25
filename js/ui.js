@@ -33,9 +33,6 @@ const UI = {
         
         // Show today's timeline or empty view
         this.loadDate(Utils.formatDate(this.selectedDate));
-        
-        // Set initial mobile navigation state
-        this.updateMobileNavActive('nav-timeline');
     },
     
     /**
@@ -70,100 +67,6 @@ const UI = {
         document.querySelectorAll('.mood-option').forEach(element => {
             element.addEventListener('click', () => this.selectMood(element.dataset.mood));
         });
-        
-        // Mobile bottom navigation
-        this.setupMobileNavigation();
-    },
-    
-    /**
-     * Set up mobile bottom navigation event listeners
-     */
-    setupMobileNavigation() {
-        const navTimeline = document.getElementById('nav-timeline');
-        const navAddNote = document.getElementById('nav-add-note');
-        const navProfile = document.getElementById('nav-profile');
-        
-        if (navTimeline) {
-            navTimeline.addEventListener('click', () => this.showTimelineView());
-        }
-        
-        if (navAddNote) {
-            navAddNote.addEventListener('click', () => this.showAddNoteView());
-        }
-        
-        if (navProfile) {
-            navProfile.addEventListener('click', () => this.showProfileView());
-        }
-    },
-    
-    /**
-     * Show timeline view (main view)
-     */
-    showTimelineView() {
-        // Update navigation active state
-        this.updateMobileNavActive('nav-timeline');
-        
-        // Show timeline container
-        document.getElementById('timeline-container').classList.remove('hidden');
-        document.getElementById('no-entry-message').classList.add('hidden');
-        document.getElementById('search-results').classList.add('hidden');
-        
-        // Scroll to top of timeline
-        const timelineContainer = document.getElementById('timeline-container');
-        if (timelineContainer) {
-            timelineContainer.scrollTop = 0;
-        }
-    },
-    
-    /**
-     * Show add note view
-     */
-    showAddNoteView() {
-        // Update navigation active state
-        this.updateMobileNavActive('nav-add-note');
-        
-        // Show timeline container (which contains the add note form)
-        document.getElementById('timeline-container').classList.remove('hidden');
-        document.getElementById('no-entry-message').classList.add('hidden');
-        document.getElementById('search-results').classList.add('hidden');
-        
-        // Scroll to add note section
-        const addNoteSection = document.querySelector('.add-note-section');
-        if (addNoteSection) {
-            addNoteSection.scrollIntoView({ behavior: 'smooth' });
-        }
-    },
-    
-    /**
-     * Show profile view
-     */
-    showProfileView() {
-        // Update navigation active state
-        this.updateMobileNavActive('nav-profile');
-        
-        // Show profile modal
-        const profileModal = document.getElementById('profile-modal');
-        if (profileModal) {
-            profileModal.classList.remove('hidden');
-            profileModal.classList.add('show');
-        }
-    },
-    
-    /**
-     * Update mobile navigation active state
-     * @param {string} activeId - ID of the active navigation button
-     */
-    updateMobileNavActive(activeId) {
-        // Remove active class from all nav buttons
-        document.querySelectorAll('.nav-btn').forEach(btn => {
-            btn.classList.remove('active');
-        });
-        
-        // Add active class to the clicked button
-        const activeBtn = document.getElementById(activeId);
-        if (activeBtn) {
-            activeBtn.classList.add('active');
-        }
     },
     
     /**
@@ -280,9 +183,6 @@ const UI = {
             document.getElementById('no-entry-message').classList.add('hidden');
             document.getElementById('timeline-container').classList.remove('hidden');
             document.getElementById('search-results').classList.add('hidden');
-            
-            // Update mobile navigation to show timeline view
-            this.updateMobileNavActive('nav-timeline');
         } catch (error) {
             console.error('Error loading timeline:', error);
             Utils.showToast("There was an error loading your notes", "error");
@@ -945,3 +845,259 @@ const UI = {
 
 // Make UI available globally
 window.UI = UI;
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Sidebar maximize/minimize and resizer (desktop only)
+    const sidebar = document.querySelector('.sidebar');
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    const sidebarResizer = document.getElementById('sidebar-resizer');
+    let isResizing = false;
+    let lastDownX = 0;
+    let startWidth = 0;
+
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('minimized');
+            // Optionally, store state in localStorage
+        });
+    }
+
+    if (sidebarResizer) {
+        sidebarResizer.addEventListener('mousedown', function(e) {
+            if (sidebar.classList.contains('minimized')) return;
+            isResizing = true;
+            lastDownX = e.clientX;
+            startWidth = sidebar.offsetWidth;
+            document.body.style.cursor = 'ew-resize';
+            document.body.style.userSelect = 'none';
+        });
+        document.addEventListener('mousemove', function(e) {
+            if (!isResizing) return;
+            let newWidth = startWidth + (e.clientX - lastDownX);
+            newWidth = Math.max(180, Math.min(420, newWidth));
+            sidebar.style.width = newWidth + 'px';
+        });
+        document.addEventListener('mouseup', function() {
+            if (isResizing) {
+                isResizing = false;
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+            }
+        });
+    }
+
+    // Mobile bottom nav logic
+    function isMobile() {
+        return window.innerWidth <= 768;
+    }
+    const bottomNav = document.getElementById('bottom-nav');
+    const mainContainer = document.getElementById('main-container');
+    const navTimeline = document.getElementById('nav-timeline');
+    const navAddNote = document.getElementById('nav-add-note');
+    const navProfile = document.getElementById('nav-profile');
+    const profileModal = document.getElementById('profile-modal');
+    const addNoteSection = document.querySelector('.add-note-section');
+    const timelineContainer = document.getElementById('timeline-container');
+
+    function showSection(section) {
+        if (section === 'timeline') {
+            timelineContainer.classList.remove('hidden');
+            addNoteSection.classList.add('hidden');
+            profileModal.classList.add('hidden');
+        } else if (section === 'add-note') {
+            timelineContainer.classList.remove('hidden');
+            addNoteSection.classList.remove('hidden');
+            profileModal.classList.add('hidden');
+            // Scroll to add note section
+            addNoteSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else if (section === 'profile') {
+            profileModal.classList.remove('hidden');
+            timelineContainer.classList.add('hidden');
+            addNoteSection.classList.add('hidden');
+        }
+    }
+
+    function updateBottomNavVisibility() {
+        if (isMobile() && mainContainer && !mainContainer.classList.contains('hidden')) {
+            bottomNav.classList.remove('hidden');
+        } else {
+            bottomNav.classList.add('hidden');
+        }
+    }
+
+    if (bottomNav && navTimeline && navAddNote && navProfile) {
+        navTimeline.addEventListener('click', function() {
+            showSection('timeline');
+            navTimeline.classList.add('active');
+            navAddNote.classList.remove('active');
+            navProfile.classList.remove('active');
+        });
+        navAddNote.addEventListener('click', function() {
+            showSection('add-note');
+            navTimeline.classList.remove('active');
+            navAddNote.classList.add('active');
+            navProfile.classList.remove('active');
+        });
+        navProfile.addEventListener('click', async function() {
+            // Show profile modal and load data
+            await loadProfile();
+            profileModal.classList.remove('hidden');
+            navTimeline.classList.remove('active');
+            navAddNote.classList.remove('active');
+            navProfile.classList.add('active');
+        });
+    }
+
+    window.addEventListener('resize', updateBottomNavVisibility);
+    updateBottomNavVisibility();
+
+    // Close modals on mobile when clicking outside
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.classList.add('hidden');
+            }
+        });
+    });
+
+    // Ensure add note section is visible on mobile when using bottom nav
+    if (isMobile() && addNoteSection) {
+        addNoteSection.classList.add('mobile-only');
+    }
+
+    // Settings modal logic
+    const settingsModal = document.getElementById('settings-modal');
+    const openSettingsBtn = document.getElementById('edit-profile-btn');
+    const closeSettingsBtn = document.getElementById('close-settings-modal');
+    // Open settings modal
+    if (openSettingsBtn && settingsModal) {
+        openSettingsBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            settingsModal.classList.remove('hidden');
+        });
+    }
+    // Close settings modal
+    if (closeSettingsBtn && settingsModal) {
+        closeSettingsBtn.addEventListener('click', function() {
+            settingsModal.classList.add('hidden');
+        });
+    }
+    // Close modal when clicking outside content
+    if (settingsModal) {
+        settingsModal.addEventListener('click', function(e) {
+            if (e.target === settingsModal) {
+                settingsModal.classList.add('hidden');
+            }
+        });
+    }
+    // Profile modal logic
+    const openProfileBtn = document.getElementById('view-profile-btn');
+    const closeProfileBtn = profileModal ? profileModal.querySelector('.close-modal') : null;
+    const saveProfileBtn = document.getElementById('save-profile-btn');
+    // Profile fields
+    const profileNameInput = document.getElementById('profile-display-name');
+    const profileAgeInput = document.getElementById('profile-age');
+    const profileHobbyInput = document.getElementById('profile-hobby');
+    const profileEmailInput = document.getElementById('profile-email');
+    const profileCreatedDiv = document.getElementById('profile-created');
+    const profileNoteInput = document.getElementById('profile-note');
+
+    // Load profile data (from RTDB)
+    async function loadProfile() {
+        let profile = {};
+        if (window.DB && DB.getUserProfile) {
+            try {
+                profile = await DB.getUserProfile();
+            } catch (e) { profile = {}; }
+        }
+        profileNameInput.value = profile.name || '';
+        profileAgeInput.value = profile.age || '';
+        profileHobbyInput.value = profile.hobby || '';
+        profileNoteInput.value = profile.note || '';
+        // Email and created date from Auth (if available)
+        if (window.Auth && Auth.currentUser) {
+            profileEmailInput.value = Auth.currentUser.email || '';
+            profileCreatedDiv.textContent = Auth.currentUser.metadata && Auth.currentUser.metadata.creationTime
+                ? new Date(Auth.currentUser.metadata.creationTime).toLocaleString()
+                : '';
+        } else {
+            profileEmailInput.value = profile.email || '';
+            profileCreatedDiv.textContent = profile.created || '';
+        }
+    }
+    // Save profile data (to RTDB)
+    async function saveProfile() {
+        const profile = {
+            name: profileNameInput.value.trim(),
+            age: profileAgeInput.value.trim(),
+            hobby: profileHobbyInput.value.trim(),
+            note: profileNoteInput.value.trim(),
+            email: profileEmailInput.value,
+            created: profileCreatedDiv.textContent
+        };
+        if (window.DB && DB.saveUserProfile) {
+            try {
+                await DB.saveUserProfile(profile);
+                if (window.Utils && Utils.showToast) {
+                    Utils.showToast('Profile saved!', 'success');
+                }
+            } catch (e) {
+                if (window.Utils && Utils.showToast) {
+                    Utils.showToast('Failed to save profile', 'error');
+                }
+            }
+        }
+    }
+    // Open profile modal
+    if (openProfileBtn && profileModal) {
+        openProfileBtn.addEventListener('click', async function(e) {
+            e.preventDefault();
+            await loadProfile();
+            profileModal.classList.remove('hidden');
+        });
+    }
+    // Save profile on button click
+    if (saveProfileBtn) {
+        saveProfileBtn.addEventListener('click', async function() {
+            await saveProfile();
+            profileModal.classList.add('hidden');
+        });
+    }
+    // Close profile modal
+    if (closeProfileBtn && profileModal) {
+        closeProfileBtn.addEventListener('click', function() {
+            profileModal.classList.add('hidden');
+        });
+    }
+    // Close modal when clicking outside content
+    if (profileModal) {
+        profileModal.addEventListener('click', function(e) {
+            if (e.target === profileModal) {
+                profileModal.classList.add('hidden');
+            }
+        });
+    }
+    // App Info modal logic
+    const navAppInfo = document.getElementById('nav-app-info');
+    const appInfoModal = document.getElementById('app-info-modal');
+    const closeAppInfoBtn = document.getElementById('close-app-info-modal');
+
+    if (navAppInfo && appInfoModal) {
+        navAppInfo.addEventListener('click', function() {
+            appInfoModal.classList.remove('hidden');
+        });
+    }
+    if (closeAppInfoBtn && appInfoModal) {
+        closeAppInfoBtn.addEventListener('click', function() {
+            appInfoModal.classList.add('hidden');
+        });
+    }
+    if (appInfoModal) {
+        appInfoModal.addEventListener('click', function(e) {
+            if (e.target === appInfoModal) {
+                appInfoModal.classList.add('hidden');
+            }
+        });
+    }
+    // Optionally, add mobile bottom nav settings button logic here if needed
+});
