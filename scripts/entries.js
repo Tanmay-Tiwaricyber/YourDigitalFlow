@@ -174,43 +174,28 @@ function createEntryCard(entry) {
             <button class="btn-icon view-full" title="View Full Entry">
                 <i class="material-icons">visibility</i>
             </button>
-            <button class="btn-icon edit-entry" title="Edit Entry">
+            <button class="btn-icon edit-entry-btn" title="Edit Entry">
                 <i class="material-icons">edit</i>
             </button>
-            <button class="btn-icon delete-entry" title="Delete Entry">
+            <button class="btn-icon delete-entry-btn" title="Delete Entry">
                 <i class="material-icons">delete</i>
             </button>
         </div>
     `;
     
+    // Store the entry data as a data attribute for edit and delete operations
+    entryCard.setAttribute('data-entry', JSON.stringify({
+        ...entry,
+        date: getCurrentDateString() // Make sure date is included for database operations
+    }));
+    
     // Add event listeners for entry actions
-    setTimeout(() => {
-        // View full entry
-        const viewBtn = entryCard.querySelector('.view-full');
-        if (viewBtn) {
-            viewBtn.addEventListener('click', () => {
-                showEntryDetail(entry);
-            });
-        }
-        
-        // Edit entry
-        const editBtn = entryCard.querySelector('.edit-entry');
-        if (editBtn) {
-            editBtn.addEventListener('click', () => {
-                editEntry(entry);
-            });
-        }
-        
-        // Delete entry
-        const deleteBtn = entryCard.querySelector('.delete-entry');
-        if (deleteBtn) {
-            deleteBtn.addEventListener('click', () => {
-                if (confirm('Are you sure you want to delete this entry? This cannot be undone.')) {
-                    deleteEntry(entry);
-                }
-            });
-        }
-    }, 0);
+    const viewBtn = entryCard.querySelector('.view-full');
+    if (viewBtn) {
+        viewBtn.addEventListener('click', () => {
+            showEntryDetail(entry);
+        });
+    }
     
     return entryCard;
 }
@@ -227,77 +212,109 @@ function getMoodClass(mood) {
 
 // Show entry detail in a modal
 function showEntryDetail(entry) {
-    // Create modal for full entry view
+    // Create modal for entry details
     const modal = document.createElement('div');
-    modal.className = 'modal entry-detail-modal active';
+    modal.className = 'modal';
+    modal.id = 'entry-detail-modal';
+    modal.classList.add('active');
     
+    // Format the time (convert 24h to 12h format)
     const timeFormatted = formatTime(entry.time);
     
+    // Format the date
+    let dateFormatted = entry.date;
+    try {
+        const [year, month, day] = entry.date.split('-');
+        const dateObj = new Date(year, month - 1, day);
+        dateFormatted = dateObj.toLocaleDateString('en-US', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        });
+    } catch (e) {
+        console.error('Error formatting date:', e);
+    }
+    
     modal.innerHTML = `
-        <div class="modal-content">
+        <div class="modal-content entry-detail-modal">
             <div class="modal-header">
                 <h3>${entry.title || 'Untitled Entry'}</h3>
-                <div class="modal-actions">
-                    <button class="btn-icon edit-entry" title="Edit entry">
-                        <i class="material-icons">edit</i>
-                    </button>
-                    <button class="btn-icon delete-entry" title="Delete entry">
-                        <i class="material-icons">delete</i>
-                    </button>
-                    <button class="btn-icon close-modal" title="Close">
-                        <i class="material-icons">close</i>
-                    </button>
-                </div>
+                <button class="btn-icon" id="close-detail-modal">
+                    <i class="material-icons">close</i>
+                </button>
             </div>
             <div class="entry-detail">
-                <div class="entry-detail-meta">
-                    <span class="entry-time">
-                        <i class="material-icons">schedule</i> ${timeFormatted}
-                    </span>
-                    <span class="entry-mood">${entry.mood || ''}</span>
+                <div class="entry-meta">
+                    <div class="meta-item">
+                        <i class="material-icons">event</i>
+                        <span>${dateFormatted}</span>
+                    </div>
+                    <div class="meta-item">
+                        <i class="material-icons">schedule</i>
+                        <span>${timeFormatted}</span>
+                    </div>
+                    ${entry.mood ? `
+                        <div class="meta-item">
+                            <span class="mood-indicator">${entry.mood}</span>
+                        </div>
+                    ` : ''}
                 </div>
-                <div class="entry-detail-content">
-                    <p>${entry.description || '<em>No description</em>'}</p>
+                
+                <div class="entry-content">
+                    <p>${entry.description || 'No description provided.'}</p>
                 </div>
-                <div class="entry-tags">
-                    ${entry.tags ? entry.tags.map(tag => `<span class="entry-tag">${tag}</span>`).join('') : ''}
+                
+                ${entry.tags && entry.tags.length > 0 ? `
+                    <div class="entry-tags detail-tags">
+                        ${entry.tags.map(tag => `<span class="entry-tag">${tag}</span>`).join('')}
+                    </div>
+                ` : ''}
+                
+                <div class="entry-actions detail-actions">
+                    <button class="btn btn-outline btn-sm edit-detail-btn">
+                        <i class="material-icons">edit</i> Edit
+                    </button>
+                    <button class="btn btn-outline btn-sm btn-danger delete-detail-btn">
+                        <i class="material-icons">delete</i> Delete
+                    </button>
                 </div>
             </div>
         </div>
     `;
     
-    // Add to document
+    // Add to the DOM
     document.body.appendChild(modal);
     
-    // Add close functionality
-    const closeBtn = modal.querySelector('.close-modal');
+    // Setup close button
+    const closeBtn = document.getElementById('close-detail-modal');
     closeBtn.addEventListener('click', () => {
         document.body.removeChild(modal);
     });
     
-    // Add edit functionality
-    const editBtn = modal.querySelector('.edit-entry');
-    editBtn.addEventListener('click', () => {
-        document.body.removeChild(modal);
-        editEntry(entry);
-    });
-    
-    // Add delete functionality
-    const deleteBtn = modal.querySelector('.delete-entry');
-    deleteBtn.addEventListener('click', () => {
-        document.body.removeChild(modal);
-        // Confirm before deleting
-        if (confirm('Are you sure you want to delete this entry? This cannot be undone.')) {
-            deleteEntry(entry);
-        }
-    });
-    
-    // Close when clicking outside
-    modal.addEventListener('click', (event) => {
-        if (event.target === modal) {
+    // Setup edit button
+    const editBtn = modal.querySelector('.edit-detail-btn');
+    if (editBtn) {
+        editBtn.addEventListener('click', () => {
+            editEntry({
+                ...entry,
+                date: entry.date || getCurrentDateString()
+            });
             document.body.removeChild(modal);
-        }
-    });
+        });
+    }
+    
+    // Setup delete button
+    const deleteBtn = modal.querySelector('.delete-detail-btn');
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', () => {
+            showDeleteConfirmation({
+                ...entry,
+                date: entry.date || getCurrentDateString()
+            });
+            document.body.removeChild(modal);
+        });
+    }
 }
 
 // Edit an existing entry

@@ -204,6 +204,51 @@
             </div>
         </div>
         
+        <!-- Edit Entry Panel (Mobile) -->
+        <div class="entry-panel" id="edit-entry-panel">
+            <div class="entry-panel-header">
+                <h3>Edit Entry</h3>
+                <button class="btn-icon" id="close-edit-panel">
+                    <i class="material-icons">close</i>
+                </button>
+            </div>
+            <div class="entry-form">
+                <div class="form-group">
+                    <label for="edit-entry-title">Title <span class="required">*</span></label>
+                    <input type="text" id="edit-entry-title" placeholder="Title your moment" autocomplete="off">
+                    <p class="hint">Give your entry a meaningful title (required)</p>
+                </div>
+                <div class="form-group">
+                    <label for="edit-entry-description">Description</label>
+                    <textarea id="edit-entry-description" placeholder="Describe your moment..."></textarea>
+                    <p class="hint">Write about your thoughts, feelings, or experiences</p>
+                </div>
+                <div class="form-group">
+                    <label for="edit-entry-time">Time</label>
+                    <input type="time" id="edit-entry-time">
+                    <p class="hint">Time of this moment</p>
+                </div>
+                <div class="form-group">
+                    <label>Mood <span class="recommended">recommended</span></label>
+                    <div class="mood-selector">
+                        <button class="mood-btn" data-mood="😊 Happy">😊</button>
+                        <button class="mood-btn" data-mood="😢 Sad">😢</button>
+                        <button class="mood-btn" data-mood="😠 Angry">😠</button>
+                        <button class="mood-btn" data-mood="😴 Tired">😴</button>
+                        <button class="mood-btn" data-mood="😌 Relaxed">😌</button>
+                    </div>
+                    <input type="hidden" id="edit-selected-mood">
+                    <p class="hint">How are you feeling right now?</p>
+                </div>
+                <div class="form-group">
+                    <label for="edit-entry-tags">Tags</label>
+                    <input type="text" id="edit-entry-tags" placeholder="Add tags separated by spaces (e.g., #work #happy)">
+                    <p class="hint">Add # before each tag or they'll be added automatically</p>
+                </div>
+                <button id="edit-save-entry" class="btn btn-primary">Save Changes</button>
+            </div>
+        </div>
+        
         <!-- Desktop Entry Modal -->
         <div class="modal" id="entry-modal">
             <div class="modal-content">
@@ -251,103 +296,73 @@
             </div>
         </div>
         
-        <!-- Profile View -->
-        <div class="profile-view" id="profile-view" style="display: none;">
-            <div class="profile-header">
-                <h2>Profile & Settings</h2>
-                <button class="btn-icon" id="close-profile-view">
-                    <i class="material-icons">arrow_back</i>
-                </button>
+        <!-- Edit Entry Modal (Desktop) -->
+        <div class="modal" id="edit-entry-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Edit Entry</h3>
+                    <button class="btn-icon" id="close-edit-modal">
+                        <i class="material-icons">close</i>
+                    </button>
+                </div>
+                <div class="entry-form">
+                    <div class="form-group">
+                        <label for="modal-edit-entry-title">Title <span class="required">*</span></label>
+                        <input type="text" id="modal-edit-entry-title" placeholder="Title your moment" autocomplete="off">
+                        <p class="hint">Give your entry a meaningful title (required)</p>
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-edit-entry-description">Description</label>
+                        <textarea id="modal-edit-entry-description" placeholder="Describe your moment..."></textarea>
+                        <p class="hint">Write about your thoughts, feelings, or experiences</p>
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-edit-entry-time">Time</label>
+                        <input type="time" id="modal-edit-entry-time">
+                        <p class="hint">Time of this moment</p>
+                    </div>
+                    <div class="form-group">
+                        <label>Mood <span class="recommended">recommended</span></label>
+                        <div class="mood-selector">
+                            <button class="mood-btn" data-mood="😊 Happy">😊</button>
+                            <button class="mood-btn" data-mood="😢 Sad">😢</button>
+                            <button class="mood-btn" data-mood="😠 Angry">😠</button>
+                            <button class="mood-btn" data-mood="😴 Tired">😴</button>
+                            <button class="mood-btn" data-mood="😌 Relaxed">😌</button>
+                        </div>
+                        <input type="hidden" id="modal-edit-selected-mood">
+                        <p class="hint">How are you feeling right now?</p>
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-edit-entry-tags">Tags</label>
+                        <input type="text" id="modal-edit-entry-tags" placeholder="Add tags separated by spaces (e.g., #work #happy)">
+                        <p class="hint">Add # before each tag or they'll be added automatically</p>
+                    </div>
+                    <button id="modal-edit-save-entry" class="btn btn-primary">Save Changes</button>
+                </div>
             </div>
-            <div class="profile-content">
-                <div class="profile-info">
-                    <div class="profile-avatar">
-                        <i class="material-icons">account_circle</i>
-                    </div>
-                    <h3 id="profile-email">user@example.com</h3>
-                    <div class="user-stats">
-                        <div class="stat-item">
-                            <span id="entry-count">0</span>
-                            <span>Entries</span>
-                        </div>
-                        <div class="stat-item">
-                            <span id="days-count">0</span>
-                            <span>Days</span>
-                        </div>
-                    </div>
+        </div>
+        
+        <!-- Delete Confirmation Modal -->
+        <div class="modal" id="delete-modal">
+            <div class="modal-content delete-modal-content">
+                <div class="modal-header">
+                    <h3>Delete Entry</h3>
+                    <button class="btn-icon" id="close-delete-modal">
+                        <i class="material-icons">close</i>
+                    </button>
                 </div>
-                
-                <div class="search-section card-section">
-                    <h4><i class="material-icons">search</i> Search Entries</h4>
-                    <div class="search-box">
-                        <input type="text" id="profile-search" placeholder="Search by title, tag, or description">
-                        <button class="btn-icon" id="clear-search">
-                            <i class="material-icons">clear</i>
-                        </button>
+                <div class="delete-confirmation">
+                    <div class="warning-icon">
+                        <i class="material-icons">warning</i>
                     </div>
-                </div>
-                
-                <div class="filter-section card-section">
-                    <h4><i class="material-icons">filter_alt</i> Filter by Mood</h4>
-                    <div class="mood-filters">
-                        <button class="mood-filter" data-mood="😊 Happy">😊</button>
-                        <button class="mood-filter" data-mood="😢 Sad">😢</button>
-                        <button class="mood-filter" data-mood="😠 Angry">😠</button>
-                        <button class="mood-filter" data-mood="😴 Tired">😴</button>
-                        <button class="mood-filter" data-mood="😌 Relaxed">😌</button>
-                    </div>
+                    <p>Are you sure you want to delete "<span id="delete-entry-title"></span>"?</p>
+                    <p class="text-muted">This action cannot be undone.</p>
                     
-                    <h4><i class="material-icons">tag</i> Filter by Tags</h4>
-                    <div class="tag-filters" id="profile-tag-filters">
-                        <!-- Tags will be populated dynamically -->
+                    <div class="delete-actions">
+                        <button id="cancel-delete" class="btn btn-outline">Cancel</button>
+                        <button id="confirm-delete" class="btn btn-danger">Delete</button>
                     </div>
-                    <button id="clear-filters" class="btn btn-sm btn-outline mt-10">Clear All Filters</button>
-                </div>
-                
-                <div class="export-section card-section">
-                    <h4><i class="material-icons">download</i> Export Entries</h4>
-                    <div class="export-buttons">
-                        <button id="profile-export-day" class="btn btn-outline">
-                            <i class="material-icons">today</i> Export Day
-                        </button>
-                        <button id="profile-export-month" class="btn btn-outline">
-                            <i class="material-icons">date_range</i> Export Month
-                        </button>
-                    </div>
-                    <div class="export-format">
-                        <p>Format:</p>
-                        <div class="radio-group">
-                            <label>
-                                <input type="radio" name="profile-export-format" value="json" checked>
-                                <span class="radio-label">JSON</span>
-                            </label>
-                            <label>
-                                <input type="radio" name="profile-export-format" value="txt">
-                                <span class="radio-label">TXT</span>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="theme-section card-section">
-                    <h4><i class="material-icons">palette</i> App Theme</h4>
-                    <div class="theme-toggle">
-                        <span class="material-icons">light_mode</span>
-                        <label class="switch">
-                            <input type="checkbox" id="profile-theme-toggle">
-                            <span class="slider round"></span>
-                        </label>
-                        <span class="material-icons">dark_mode</span>
-                    </div>
-                </div>
-                
-                <button id="logout-button" class="btn btn-outline btn-danger w-100">
-                    <i class="material-icons mr-5">logout</i> Logout
-                </button>
-                
-                <div class="app-info mt-20">
-                    <p class="text-center text-muted">Your Digital Flow v1.0</p>
-                    <p class="text-center text-muted">© 2025 All Rights Reserved</p>
                 </div>
             </div>
         </div>
@@ -363,10 +378,7 @@
     <script src="scripts/auth.js"></script>
     <script src="scripts/calendar.js"></script>
     <script src="scripts/entries.js"></script>
-    <script src="scripts/ui.js"></script>
-    <script src="scripts/app.js"></script>
-    <script src="scripts/calendar.js"></script>
-    <script src="scripts/entries.js"></script>
+    <script src="scripts/edit.js"></script>
     <script src="scripts/ui.js"></script>
     <script src="scripts/app.js"></script>
 </body>

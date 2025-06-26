@@ -34,10 +34,10 @@
                 }
               },
               "createdAt": {
-                ".validate": "newData.isNumber()"
+                ".validate": "newData.isString() || newData.isNumber()"
               },
               "updatedAt": {
-                ".validate": "newData.isNumber()"
+                ".validate": "newData.isString() || newData.isNumber()"
               },
               "$other": { ".validate": false }
             }

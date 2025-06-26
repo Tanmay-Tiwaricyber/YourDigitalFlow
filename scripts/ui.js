@@ -198,3 +198,82 @@ function updateUserStats(userId) {
         console.error('Error fetching user stats:', error);
     });
 }
+
+// Close edit entry panel/modal
+const closeEditPanelBtn = document.getElementById('close-edit-panel');
+if (closeEditPanelBtn) {
+    closeEditPanelBtn.addEventListener('click', () => {
+        document.getElementById('edit-entry-panel').classList.remove('active');
+    });
+}
+
+// Close edit entry modal
+const closeEditModalBtn = document.getElementById('close-edit-modal');
+if (closeEditModalBtn) {
+    closeEditModalBtn.addEventListener('click', () => {
+        document.getElementById('edit-entry-modal').classList.remove('active');
+    });
+}
+
+// Close delete modal
+const closeDeleteModalBtn = document.getElementById('close-delete-modal');
+if (closeDeleteModalBtn) {
+    closeDeleteModalBtn.addEventListener('click', () => {
+        document.getElementById('delete-modal').classList.remove('active');
+    });
+}
+
+// Setup keyboard navigation and accessibility
+function setupKeyboardNavigation() {
+    // Handle Escape key to close modals and panels
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+            // Close any active modals
+            document.querySelectorAll('.modal.active').forEach(modal => {
+                modal.classList.remove('active');
+            });
+            
+            // Close any active panels
+            document.querySelectorAll('.entry-panel.active').forEach(panel => {
+                panel.classList.remove('active');
+            });
+            
+            // Close mobile calendar if open
+            const mobileCalendar = document.getElementById('mobile-calendar-container');
+            if (mobileCalendar && mobileCalendar.style.display !== 'none') {
+                mobileCalendar.style.display = 'none';
+            }
+        }
+    });
+    
+    // Setup focus trapping in modals for keyboard navigation
+    setupFocusTrap();
+}
+
+// Trap focus within active modals for keyboard accessibility
+function setupFocusTrap() {
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Tab') {
+            const activeModal = document.querySelector('.modal.active');
+            if (activeModal) {
+                const focusableElements = activeModal.querySelectorAll(
+                    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+                );
+                
+                if (focusableElements.length > 0) {
+                    const firstElement = focusableElements[0];
+                    const lastElement = focusableElements[focusableElements.length - 1];
+                    
+                    // Handle tabbing forward and backward
+                    if (event.shiftKey && document.activeElement === firstElement) {
+                        event.preventDefault();
+                        lastElement.focus();
+                    } else if (!event.shiftKey && document.activeElement === lastElement) {
+                        event.preventDefault();
+                        firstElement.focus();
+                    }
+                }
+            }
+        }
+    });
+}
