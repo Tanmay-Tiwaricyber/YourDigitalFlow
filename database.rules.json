@@ -1,0 +1,51 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "users": {
+      "$uid": {
+        // Allow read/write access only to the authenticated user for their own data
+        ".read": "$uid === auth.uid",
+        ".write": "$uid === auth.uid",
+        
+        "entries": {
+          // Validate entry structure
+          "$date": {
+            "$time": {
+              ".validate": "newData.hasChildren(['title'])",
+              "title": {
+                ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100"
+              },
+              "description": {
+                ".validate": "newData.isString() && newData.val().length <= 1000"
+              },
+              "mood": {
+                ".validate": "newData.isString() && newData.val().length <= 20"
+              },
+              "tags": {
+                ".validate": "newData.isArray()",
+                "$tagIndex": {
+                  ".validate": "newData.isString() && newData.val().length <= 30"
+                }
+              },
+              // Disallow additional properties
+              "$other": {
+                ".validate": false
+              }
+            }
+          }
+        },
+        // Disallow additional properties other than entries
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+    // Disallow access to /.info/connected for client-side connectivity checking
+    ".info": {
+      "connected": {
+        ".read": true
+      }
+    }
+  }
+}
