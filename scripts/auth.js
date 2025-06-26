@@ -224,19 +224,13 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("Auth state change detected", user ? "Signed in" : "Signed out");
         
         // Safety check for DOM elements
-        if (!authContainer || !appContainer) {
-            console.error("Auth container or app container not found!");
-            // Try to create a graceful fallback
-            const authContainerRef = document.getElementById('auth-container');
-            const appContainerRef = document.getElementById('app-container');
+        const authContainerRef = authContainer || document.getElementById('auth-container');
+        const appContainerRef = appContainer || document.getElementById('app-container');
             
-            if (authContainerRef && appContainerRef) {
-                console.log("Found container elements using direct ID lookup");
-            } else {
-                console.error("Critical error: Cannot find containers even with direct lookup");
-                showToast("Application error: UI elements missing", "error");
-                return;
-            }
+        if (!authContainerRef || !appContainerRef) {
+            console.error("Critical error: Cannot find containers");
+            showToast("Application error: UI elements missing", "error");
+            return;
         }
         
         if (user) {
@@ -249,56 +243,47 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!isFirebaseDefined) {
                     console.error("Firebase not initialized in auth state change");
                     showToast("Connection issue: Trying to restore session", "warning");
-                }
-                
-                // Ensure required functions are available before proceeding
-                if (typeof getCurrentDateString !== 'function') {
-                    console.error("getCurrentDateString function not found!");
-                    showToast("Application error: Missing critical functions", "error");
-                    // Try loading a fallback version from utils.js
-                    if (typeof loadScript === 'function') {
-                        loadScript('scripts/utils.js', () => {
-                            console.log("Loaded utils.js for fallback functions");
-                        });
+                    // Try to reinitialize Firebase
+                    if (typeof initializeFirebase === 'function') {
+                        initializeFirebase();
                     }
                 }
                 
-                // Use smooth transition to show app
-                transitionContainers(authContainer, appContainer, () => {
-                    // Update UI elements after transition completes
-                    if (profileEmail) {
-                        profileEmail.textContent = user.email;
-                    }
+                // Ensure scripts are loaded before proceeding
+                ensureScriptsLoaded(() => {
+                    // Use smooth transition to show app
+                    transitionContainers(authContainerRef, appContainerRef, () => {
+                        // Update UI elements after transition completes
+                        if (profileEmail) {
+                            profileEmail.textContent = user.email;
+                        }
+                        
+                        // Load user's entries for today
+                        if (typeof loadEntries === 'function') {
+                            console.log("Loading entries for today");
+                            loadEntries(user.uid, getCurrentDateString());
+                        } 
+                        
+                        // Mark calendar dates with entries
+                        if (typeof markCalendarDatesWithEntries === 'function') {
+                            console.log("Marking calendar dates with entries");
+                            markCalendarDatesWithEntries(user.uid);
+                        } 
+                        
+                        // Update user stats in profile
+                        if (typeof updateUserStats === 'function') {
+                            console.log("Updating user stats");
+                            updateUserStats(user.uid);
+                        }
+                    });
                     
-                    // Load user's entries for today
-                    if (typeof loadEntries === 'function') {
-                        console.log("Loading entries for today");
-                        loadEntries(user.uid, getCurrentDateString());
-                    } else {
-                        console.error("loadEntries function not found");
-                    }
-                    
-                    // Mark calendar dates with entries
-                    if (typeof markCalendarDatesWithEntries === 'function') {
-                        console.log("Marking calendar dates with entries");
-                        markCalendarDatesWithEntries(user.uid);
-                    } else {
-                        console.error("markCalendarDatesWithEntries function not found");
-                    }
-                    
-                    // Update user stats in profile
-                    if (typeof updateUserStats === 'function') {
-                        console.log("Updating user stats");
-                        updateUserStats(user.uid);
+                    // Show welcome toast on first login/signup
+                    const isFirstLogin = sessionStorage.getItem('firstLogin') !== 'false';
+                    if (isFirstLogin) {
+                        showToast(`Welcome, ${user.email}! Your digital diary is ready.`, 'success');
+                        sessionStorage.setItem('firstLogin', 'false');
                     }
                 });
-                
-                // Show welcome toast on first login/signup
-                const isFirstLogin = sessionStorage.getItem('firstLogin') !== 'false';
-                if (isFirstLogin) {
-                    showToast(`Welcome, ${user.email}! Your digital diary is ready.`, 'success');
-                    sessionStorage.setItem('firstLogin', 'false');
-                }
             } catch (error) {
                 console.error("Error in auth state change handler:", error);
                 showToast("An error occurred while loading your data. Please refresh the page.", "error");
@@ -306,7 +291,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             // User is signed out - use smooth transition
             console.log("User is signed out, transitioning to auth container");
-            transitionContainers(appContainer, authContainer, () => {
+            transitionContainers(appContainerRef, authContainerRef, () => {
                 console.log("Transition to authentication view complete");
             });
         }
@@ -316,49 +301,7 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast("Authentication error: " + (error.message || "Unknown error"), "error");
     });
     
-    // Test login functionality for troubleshooting
-    const testLoginButton = document.getElementById('test-login');
-    if (testLoginButton) {
-        testLoginButton.addEventListener('click', function() {
-            console.log('Test login button clicked');
-            
-            // Show diagnostic information
-            console.log('Firebase initialized:', !!firebase);
-            console.log('Firebase apps:', firebase.apps.length);
-            console.log('Auth reference:', !!firebase.auth());
-            
-            // Hard-coded test account
-            const testEmail = "test@example.com";
-            const testPassword = "password123";
-            
-            // Create the test account if it doesn't exist, then sign in
-            firebase.auth().createUserWithEmailAndPassword(testEmail, testPassword)
-                .then(userCredential => {
-                    console.log("Test account created successfully");
-                    showToast("Test account created", "success");
-                    
-                    // Now try to login
-                    return firebase.auth().signInWithEmailAndPassword(testEmail, testPassword);
-                })
-                .catch(error => {
-                    // If account already exists, just try to sign in
-                    if (error.code === 'auth/email-already-in-use') {
-                        console.log("Test account already exists, trying to sign in");
-                        return firebase.auth().signInWithEmailAndPassword(testEmail, testPassword);
-                    } else {
-                        throw error;
-                    }
-                })
-                .then(userCredential => {
-                    console.log("Test login successful", userCredential.user.uid);
-                    showToast("Test login successful!", "success");
-                })
-                .catch(error => {
-                    console.error("Test login error:", error.code, error.message);
-                    showToast(`Test login failed: ${error.message}`, "error");
-                });
-        });
-    }
+    // Authentication setup complete
 });
 
 // Fallback for getCurrentDateString if it's not defined elsewhere
@@ -378,37 +321,49 @@ function updateUIAfterAuth(user) {
     console.log("Manually updating UI after auth");
     
     // Safety check for DOM elements
-    if (!authContainer || !appContainer) {
+    const authContainerRef = authContainer || document.getElementById('auth-container');
+    const appContainerRef = appContainer || document.getElementById('app-container');
+    
+    if (!authContainerRef || !appContainerRef) {
         console.error("Auth container or app container not found!");
+        showToast("Application error: UI elements missing", "error");
         return;
     }
     
     if (user) {
-        // User is authenticated - use smooth transition
-        transitionContainers(authContainer, appContainer, () => {
-            console.log("Auth container transition complete");
-            
-            // Update profile email if available
-            if (profileEmail) {
-                profileEmail.textContent = user.email;
-            }
-            
-            // Check for required functions
-            if (typeof getCurrentDateString === 'function' && typeof loadEntries === 'function') {
-                loadEntries(user.uid, getCurrentDateString());
-            } else {
-                console.error("Required functions missing: getCurrentDateString or loadEntries");
-            }
-            
-            if (typeof markCalendarDatesWithEntries === 'function') {
-                markCalendarDatesWithEntries(user.uid);
-            } else {
-                console.error("Required function missing: markCalendarDatesWithEntries");
-            }
+        // Ensure all scripts are loaded before proceeding
+        ensureScriptsLoaded(() => {
+            // User is authenticated - use smooth transition
+            transitionContainers(authContainerRef, appContainerRef, () => {
+                console.log("Auth container transition complete");
+                
+                // Update profile email if available
+                if (profileEmail) {
+                    profileEmail.textContent = user.email;
+                }
+                
+                // Load user's entries for today
+                if (typeof loadEntries === 'function') {
+                    console.log("Loading entries for today");
+                    loadEntries(user.uid, getCurrentDateString());
+                }
+                
+                // Mark calendar dates with entries
+                if (typeof markCalendarDatesWithEntries === 'function') {
+                    console.log("Marking calendar dates with entries");
+                    markCalendarDatesWithEntries(user.uid);
+                }
+                
+                // Update user stats in profile
+                if (typeof updateUserStats === 'function') {
+                    console.log("Updating user stats");
+                    updateUserStats(user.uid);
+                }
+            });
         });
     } else {
         // User is not authenticated
-        transitionContainers(appContainer, authContainer, () => {
+        transitionContainers(appContainerRef, authContainerRef, () => {
             console.log("App container transition complete");
         });
     }
@@ -445,6 +400,72 @@ function transitionContainers(fromContainer, toContainer, callback) {
             callback();
         }
     }
+}
+
+// Function to ensure all required scripts are loaded before proceeding
+function ensureScriptsLoaded(callback) {
+    console.log("Ensuring all required scripts are loaded");
+    
+    // List of required script paths
+    const requiredScripts = [
+        'scripts/utils.js',
+        'scripts/entries.js',
+        'scripts/calendar.js',
+        'scripts/ui.js'
+    ];
+    
+    // Track loaded scripts
+    let loadedCount = 0;
+    
+    // Check if all required functions are already available
+    if (typeof loadEntries === 'function' && 
+        typeof markCalendarDatesWithEntries === 'function' &&
+        typeof updateUserStats === 'function') {
+        console.log("All required functions are already available");
+        callback();
+        return;
+    }
+    
+    // Helper to load a script
+    function loadScriptIfNeeded(src) {
+        // Check if script is already loaded
+        const existingScript = document.querySelector(`script[src="${src}"]`);
+        if (existingScript) {
+            console.log(`${src} already loaded`);
+            scriptLoaded();
+            return;
+        }
+        
+        console.log(`Loading ${src}`);
+        const script = document.createElement('script');
+        script.src = src;
+        script.async = true;
+        
+        script.onload = () => {
+            console.log(`${src} loaded successfully`);
+            scriptLoaded();
+        };
+        
+        script.onerror = (error) => {
+            console.error(`Error loading ${src}:`, error);
+            scriptLoaded();
+        };
+        
+        document.head.appendChild(script);
+    }
+    
+    // Track loaded scripts and call callback when all are loaded
+    function scriptLoaded() {
+        loadedCount++;
+        if (loadedCount >= requiredScripts.length) {
+            console.log("All required scripts loaded");
+            // Small delay to ensure functions are defined
+            setTimeout(callback, 100);
+        }
+    }
+    
+    // Start loading scripts
+    requiredScripts.forEach(loadScriptIfNeeded);
 }
 
 // Enhanced helper function to show toast notifications with improved stacking and queuing
