@@ -2,439 +2,372 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>Your Digital Flow - Timeline Diary</title>
-    <link rel="stylesheet" href="./css/styles.css">
-    <link rel="stylesheet" media="(min-width: 769px)" href="./css/desktop.css">
-    <link rel="stylesheet" media="(max-width: 768px)" href="./css/mobile.css">
-    <link rel="stylesheet" href="./css/profile-styles.css">
-    <!-- Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Digital Flow - Digital Diary</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
-<body>
-    <div id="app" class="app">
-        <!-- Auth Pages -->
-        <div id="auth-container" class="container auth-container">
-            <div class="auth-box">
-                <h1>Your Digital Flow</h1>
-                <div class="tabs">
-                    <div id="login-tab" class="tab active">Login</div>
-                    <div id="signup-tab" class="tab">Sign Up</div>
+<body class="light-theme">
+    <!-- Authentication Container -->
+    <div id="auth-container" class="auth-container">
+        <div class="auth-card">
+            <h1>Your Digital Flow</h1>
+            <p class="subtitle">Your personal digital diary</p>
+            
+            <!-- Login Form -->
+            <div id="login-form">
+                <h2>Login</h2>
+                <div class="input-group">
+                    <input type="email" id="login-email" placeholder="Email" required>
                 </div>
-                
-                <!-- Login Form -->
-                <form id="login-form" class="auth-form">
-                    <div class="form-group">
-                        <label for="login-email">Email</label>
-                        <input type="email" id="login-email" required autocomplete="username">
-                    </div>                    <div class="form-group">
-                        <label for="login-password">Password</label>
-                        <input type="password" id="login-password" autocomplete="current-password" required>
-                    </div><button type="submit" class="btn btn-primary">Login</button>
-                    <p id="login-error" class="error-message"></p>
-                    <p id="login-success" class="success-message hidden"></p>
-                </form>
-                
-                <!-- Signup Form -->
-                <form id="signup-form" class="auth-form hidden">
-                    <div class="form-group">
-                        <label for="signup-email">Email</label>
-                        <input type="email" id="signup-email" required autocomplete="username">
-                    </div>                    <div class="form-group">
-                        <label for="signup-password">Password</label>
-                        <input type="password" id="signup-password" autocomplete="new-password" required minlength="6">
-                    </div>                    <div class="form-group">
-                        <label for="signup-confirm">Confirm Password</label>
-                        <input type="password" id="signup-confirm" autocomplete="new-password" required minlength="6">
-                    </div>
-                    <button type="submit" class="btn btn-primary">Sign Up</button>
-                    <p id="signup-error" class="error-message"></p>
-                    <p id="signup-success" class="success-message hidden"></p>
-                </form>
+                <div class="input-group">
+                    <input type="password" id="login-password" placeholder="Password" required>
+                </div>
+                <button id="login-button" class="btn btn-primary">Login</button>
+                <p class="form-switch">Don't have an account? <a href="#" id="show-signup">Sign up</a></p>
+            </div>
+            
+            <!-- Signup Form -->
+            <div id="signup-form" style="display: none;">
+                <h2>Sign Up</h2>
+                <div class="input-group">
+                    <input type="email" id="signup-email" placeholder="Email" required>
+                </div>
+                <div class="input-group">
+                    <input type="password" id="signup-password" placeholder="Password" required>
+                </div>
+                <div class="input-group">
+                    <input type="password" id="signup-confirm-password" placeholder="Confirm Password" required>
+                </div>
+                <button id="signup-button" class="btn btn-primary">Sign Up</button>
+                <p class="form-switch">Already have an account? <a href="#" id="show-login">Login</a></p>
             </div>
         </div>
-          <!-- Main App (visible after login) -->
-        <div id="main-container" class="container main-container hidden">
-            <header class="header">
-                <div class="logo-container">
-                    <h1 class="app-logo">Your Digital Flow</h1>
+    </div>
+    
+    <!-- Main App Container (Hidden until authenticated) -->
+    <div id="app-container" class="app-container" style="display: none;">
+        <!-- Desktop Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Your Digital Flow</h2>
+            </div>
+            
+            <div class="calendar-container">
+                <div class="calendar-header">
+                    <button id="prev-month"><i class="material-icons">chevron_left</i></button>
+                    <h3 id="calendar-month">June 2025</h3>
+                    <button id="next-month"><i class="material-icons">chevron_right</i></button>
                 </div>
-                <div class="header-controls">
-                    <button id="theme-toggle" class="btn btn-icon" aria-label="Toggle theme">
-                        <i class="fas fa-moon"></i>
-                    </button>
-                    <div class="user-profile">
-                        <div class="profile-dropdown">
-                            <button class="profile-btn" aria-label="User profile">
-                                <div class="profile-avatar">
-                                    <i class="fas fa-user"></i>
-                                </div>
-                                <span id="user-email" class="user-email-display"></span>
-                                <i class="fas fa-chevron-down"></i>
-                            </button>
-                            <div class="profile-dropdown-content">
-                                <a href="#" id="view-profile-btn">
-                                    <i class="fas fa-user-circle"></i> View Profile
-                                </a>
-                                <a href="#" id="edit-profile-btn">
-                                    <i class="fas fa-cog"></i> Settings
-                                </a>
-                                <a href="#" id="view-app-info-btn">
-                                    <i class="fas fa-info-circle"></i> App Info
-                                </a>
-                                <div class="dropdown-divider"></div>
-                                <a href="#" id="logout-btn">
-                                    <i class="fas fa-sign-out-alt"></i> Logout
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </header>
-              <div class="content">
-                <div class="sidebar">
-                    <button id="sidebar-toggle" class="btn btn-icon sidebar-toggle" title="Toggle sidebar" aria-label="Toggle sidebar">
-                        <i class="fas fa-angle-double-left"></i>
-                    </button>
-                    <div id="sidebar-content">
-                    <div id="calendar" class="calendar-container">
-                        <div class="calendar-header">
-                            <button id="prev-month" class="btn btn-icon" aria-label="Previous month"><i class="fas fa-chevron-left"></i></button>
-                            <h2 id="current-month">June 2023</h2>
-                            <button id="next-month" class="btn btn-icon" aria-label="Next month"><i class="fas fa-chevron-right"></i></button>
-                        </div>
-                        <div class="calendar-scroll-wrapper">
-                            <div class="weekdays">
-                                <div>Su</div><div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div>
-                            </div>
-                            <div id="calendar-days" class="calendar-days"></div>
-     
-                        </div>
-                    </div>
-                    
-                    <div class="search-container">
-                        <input type="text" id="search-input" placeholder="Search entries...">
-                        <button id="search-btn" class="btn btn-icon"><i class="fas fa-search"></i></button>
-                        <div id="tag-filters" class="tag-filters"></div>
-                    </div>
-                    
-                    <div class="export-container">
-                        <button id="export-btn" class="btn btn-outline btn-full">Export All Entries</button>
-                    </div>
-                    </div>
-                    <div id="sidebar-resizer" class="sidebar-resizer" title="Resize sidebar"></div>
+                <div class="calendar" id="calendar"></div>
+            </div>
+            
+            <div class="sidebar-search">
+                <input type="text" id="desktop-search" placeholder="Search entries...">
+            </div>
+            
+            <div class="filter-section">
+                <h4>Filter by Mood</h4>
+                <div class="mood-filters">
+                    <button class="mood-filter" data-mood="😊 Happy">😊</button>
+                    <button class="mood-filter" data-mood="😢 Sad">😢</button>
+                    <button class="mood-filter" data-mood="😠 Angry">😠</button>
+                    <button class="mood-filter" data-mood="😴 Tired">😴</button>
+                    <button class="mood-filter" data-mood="😌 Relaxed">😌</button>
                 </div>
                 
-                <div class="main-content">
-                    <div id="entry-container" class="entry-container">
-                        <!-- If no entry selected -->
-                        <div id="no-entry-message" class="no-entry-message">
-                            <i class="fas fa-book-open"></i>
-                            <p>Select a date or create a new entry</p>
-                        </div>
-                          <!-- Timeline View -->
-                        <div id="timeline-container" class="timeline-container hidden">
-                            <div class="timeline-header">
-                                <h2 id="entry-date">June 23, 2025</h2>
-                            </div>
-                            
-                            <!-- Timeline Notes Container -->
-                            <div id="timeline-notes" class="timeline-notes">
-                                <!-- Notes will be rendered here -->
-                            </div>
-                            
-                            <!-- Add New Note Form -->
-                            <div class="add-note-section">
-                                <h3 class="add-note-title">➕ Add New Note</h3>
-                                <form id="note-form" class="note-form">
-                                    <div class="form-row">
-                                        <div class="form-group time-input">
-                                            <label for="note-time">Time</label>
-                                            <input type="time" id="note-time" required>
-                                        </div>
-                                        
-                                        <div class="form-group mood-input">
-                                            <label>Mood (optional)</label>
-                                            <div class="mood-selector">
-                                                <div class="mood-option" data-mood="happy">
-                                                    <i class="fas fa-grin"></i>
-                                                    <span>Happy</span>
-                                                </div>
-                                                <div class="mood-option" data-mood="neutral">
-                                                    <i class="fas fa-meh"></i>
-                                                    <span>Neutral</span>
-                                                </div>
-                                                <div class="mood-option" data-mood="sad">
-                                                    <i class="fas fa-frown"></i>
-                                                    <span>Sad</span>
-                                                </div>
-                                                <div class="mood-option" data-mood="excited">
-                                                    <i class="fas fa-grin-stars"></i>
-                                                    <span>Excited</span>
-                                                </div>
-                                                <div class="mood-option" data-mood="tired">
-                                                    <i class="fas fa-tired"></i>
-                                                    <span>Tired</span>
-                                                </div>
-                                                <div class="mood-option" data-mood="calm">
-                                                    <i class="fas fa-smile"></i>
-                                                    <span>Calm</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="form-group">
-                                        <label for="note-content">Note</label>
-                                        <textarea id="note-content" placeholder="Write your note here..." required></textarea>
-                                    </div>
-                                    
-                                    <div class="form-group">
-                                        <label for="note-tags">Tags (comma separated, optional)</label>
-                                        <input type="text" id="note-tags" placeholder="work, family, hobby...">
-                                    </div>
-                                    
-                                    <div class="form-group">
-                                        <label>Images (max 2, optional)</label>
-                                        <div class="image-upload-container">
-                                            <div class="image-upload">
-                                                <input type="file" id="note-image-1" accept="image/*" class="hidden">
-                                                <label for="note-image-1" id="image-label-1" class="image-label">
-                                                    <i class="fas fa-plus"></i>
-                                                </label>
-                                                <div id="image-preview-1" class="image-preview hidden"></div>
-                                                <button type="button" id="remove-image-1" class="btn btn-icon remove-image hidden">
-                                                    <i class="fas fa-times"></i>
-                                                </button>
-                                            </div>
-                                            
-                                            <div class="image-upload">
-                                                <input type="file" id="note-image-2" accept="image/*" class="hidden">
-                                                <label for="note-image-2" id="image-label-2" class="image-label">
-                                                    <i class="fas fa-plus"></i>
-                                                </label>
-                                                <div id="image-preview-2" class="image-preview hidden"></div>
-                                                <button type="button" id="remove-image-2" class="btn btn-icon remove-image hidden">
-                                                    <i class="fas fa-times"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="form-actions">
-                                        <button type="submit" id="add-note-btn" class="btn btn-primary">Add Note</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                        
-                        <!-- Search Results -->
-                        <div id="search-results" class="search-results hidden">
-                            <h2>Search Results</h2>
-                            <div id="results-list" class="results-list"></div>
-                        </div>
-                    </div>
+                <h4>Filter by Tags</h4>
+                <div class="tag-filters" id="tag-filters">
+                    <!-- Tags will be populated dynamically -->
                 </div>
             </div>
+            
+            <div class="export-section">
+                <h4>Export Entries</h4>
+                <button id="export-day" class="btn btn-outline">Export Day</button>
+                <button id="export-month" class="btn btn-outline">Export Month</button>
+                <div class="export-format">
+                    <label>
+                        <input type="radio" name="export-format" value="json" checked> JSON
+                    </label>
+                    <label>
+                        <input type="radio" name="export-format" value="txt"> TXT
+                    </label>
+                </div>
+            </div>
+            
+            <div class="theme-toggle">
+                <span class="material-icons">light_mode</span>
+                <label class="switch">
+                    <input type="checkbox" id="theme-toggle">
+                    <span class="slider round"></span>
+                </label>
+                <span class="material-icons">dark_mode</span>
+            </div>
         </div>
-        <!-- Bottom Navigation -->
-        <div id="bottom-nav" class="bottom-nav hidden">
-            <button id="nav-timeline" class="nav-btn active">
-                <i class="fas fa-stream"></i>
+        
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <div class="mobile-header">
+                <h2 id="mobile-date-display">June 26, 2025</h2>
+                <button id="mobile-calendar-toggle" class="btn-icon">
+                    <i class="material-icons">calendar_today</i>
+                </button>
+            </div>
+            
+            <div id="mobile-calendar-container" class="mobile-calendar-container" style="display: none;">
+                <div class="calendar-header">
+                    <button id="mobile-prev-month"><i class="material-icons">chevron_left</i></button>
+                    <h3 id="mobile-calendar-month">June 2025</h3>
+                    <button id="mobile-next-month"><i class="material-icons">chevron_right</i></button>
+                </div>
+                <div class="calendar" id="mobile-calendar"></div>
+                <button id="close-mobile-calendar" class="btn btn-outline btn-sm mt-10">Close</button>
+            </div>
+            
+            <div class="entries-container" id="entries-container">
+                <!-- Entries will be populated here -->
+                <div class="empty-state" id="empty-state">
+                    <div class="empty-state-icon">
+                        <i class="material-icons">book</i>
+                    </div>
+                    <h3>No entries for this day</h3>
+                    <p>Add your first diary entry by clicking the + button below</p>
+                </div>
+            </div>
+            
+            <!-- Desktop Add Entry Button -->
+            <button id="desktop-add-entry" class="floating-btn">
+                <i class="material-icons">add</i>
+            </button>
+        </div>
+        
+        <!-- Mobile Bottom Navigation -->
+        <div class="mobile-nav">
+            <button class="nav-item active" data-view="timeline">
+                <i class="material-icons">view_timeline</i>
                 <span>Timeline</span>
             </button>
-            <button id="nav-add-note" class="nav-btn">
-                <i class="fas fa-plus-circle"></i>
-                <span>Add Note</span>
+            <button class="nav-item" data-view="add-entry">
+                <i class="material-icons">add_circle</i>
+                <span>Add Entry</span>
             </button>
-            <!-- <button id="nav-profile" class="nav-btn desktop-only">
-                <i class="fas fa-user"></i>
+            <button class="nav-item" data-view="profile">
+                <i class="material-icons">account_circle</i>
                 <span>Profile</span>
-            </button> -->
-            <button id="nav-app-info" class="nav-btn">
-                <i class="fas fa-info-circle"></i>
-                <span>App Info</span>
             </button>
         </div>
-          <!-- Loading Overlay -->
-        <div id="loading-overlay" class="loading-overlay hidden">
-            <div class="spinner"></div>
+        
+        <!-- Mobile Add Entry Panel -->
+        <div class="entry-panel" id="entry-panel">
+            <div class="entry-panel-header">
+                <h3>Add New Entry</h3>
+                <button class="btn-icon" id="close-entry-panel">
+                    <i class="material-icons">close</i>
+                </button>
+            </div>
+            <div class="entry-form">
+                <div class="form-group">
+                    <label for="entry-title">Title <span class="required">*</span></label>
+                    <input type="text" id="entry-title" placeholder="Title your moment" autocomplete="off">
+                    <p class="hint">Give your entry a meaningful title (required)</p>
+                </div>
+                <div class="form-group">
+                    <label for="entry-description">Description</label>
+                    <textarea id="entry-description" placeholder="Describe your moment..."></textarea>
+                    <p class="hint">Write about your thoughts, feelings, or experiences</p>
+                </div>
+                <div class="form-group">
+                    <label for="entry-time">Time</label>
+                    <input type="time" id="entry-time">
+                    <p class="hint">Time of this moment (defaults to current time if empty)</p>
+                </div>
+                <div class="form-group">
+                    <label>Mood <span class="recommended">recommended</span></label>
+                    <div class="mood-selector">
+                        <button class="mood-btn" data-mood="😊 Happy">😊</button>
+                        <button class="mood-btn" data-mood="😢 Sad">😢</button>
+                        <button class="mood-btn" data-mood="😠 Angry">😠</button>
+                        <button class="mood-btn" data-mood="😴 Tired">😴</button>
+                        <button class="mood-btn" data-mood="😌 Relaxed">😌</button>
+                    </div>
+                    <input type="hidden" id="selected-mood">
+                    <p class="hint">How are you feeling right now?</p>
+                </div>
+                <div class="form-group">
+                    <label for="entry-tags">Tags</label>
+                    <input type="text" id="entry-tags" placeholder="Add tags separated by spaces (e.g., #work #happy)">
+                    <p class="hint">Add # before each tag or they'll be added automatically</p>
+                </div>
+                <button id="save-entry" class="btn btn-primary">Save Entry</button>
+            </div>
         </div>
         
-        <!-- Profile Modal -->
-        <div id="profile-modal" class="modal hidden">
+        <!-- Desktop Entry Modal -->
+        <div class="modal" id="entry-modal">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h2>User Profile</h2>
-                    <button class="close-modal">&times;</button>
+                    <h3>Add New Entry</h3>
+                    <button class="btn-icon" id="close-modal">
+                        <i class="material-icons">close</i>
+                    </button>
                 </div>
-                <div class="modal-body">
-                    <div class="profile-info">
-                        <div class="profile-avatar-large">
-                            <i class="fas fa-user"></i>
-                        </div>
-                        <div class="profile-details">
-                            <div class="form-group">
-                                <label for="profile-display-name">Name</label>
-                                <input type="text" id="profile-display-name">
-                            </div>
-                            <div class="form-group">
-                                <label for="profile-age">Age</label>
-                                <input type="number" id="profile-age" min="0" max="120">
-                            </div>
-                            <div class="form-group">
-                                <label for="profile-hobby">Hobby</label>
-                                <input type="text" id="profile-hobby">
-                            </div>
-                            <div class="form-group">
-                                <label for="profile-email">Email Address</label>
-                                <input type="email" id="profile-email" readonly>
-                            </div>
-                            <div class="form-group">
-                                <label>Account Created</label>
-                                <div id="profile-created"></div>
-                            </div>
-                            <div class="form-group">
-                                <label for="profile-note">Special Note to Self</label>
-                                <textarea id="profile-note" rows="2" placeholder="Write a special note to yourself..."></textarea>
-                            </div>
-                        </div>
+                <div class="entry-form">
+                    <div class="form-group">
+                        <label for="modal-entry-title">Title <span class="required">*</span></label>
+                        <input type="text" id="modal-entry-title" placeholder="Title your moment" autocomplete="off">
+                        <p class="hint">Give your entry a meaningful title (required)</p>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button id="save-profile-btn" class="btn btn-primary">Save Changes</button>
+                    <div class="form-group">
+                        <label for="modal-entry-description">Description</label>
+                        <textarea id="modal-entry-description" placeholder="Describe your moment..."></textarea>
+                        <p class="hint">Write about your thoughts, feelings, or experiences</p>
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-entry-time">Time</label>
+                        <input type="time" id="modal-entry-time">
+                        <p class="hint">Time of this moment (defaults to current time if empty)</p>
+                    </div>
+                    <div class="form-group">
+                        <label>Mood <span class="recommended">recommended</span></label>
+                        <div class="mood-selector">
+                            <button class="mood-btn" data-mood="😊 Happy">😊</button>
+                            <button class="mood-btn" data-mood="😢 Sad">😢</button>
+                            <button class="mood-btn" data-mood="😠 Angry">😠</button>
+                            <button class="mood-btn" data-mood="😴 Tired">😴</button>
+                            <button class="mood-btn" data-mood="😌 Relaxed">😌</button>
+                        </div>
+                        <input type="hidden" id="modal-selected-mood">
+                        <p class="hint">How are you feeling right now?</p>
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-entry-tags">Tags</label>
+                        <input type="text" id="modal-entry-tags" placeholder="Add tags separated by spaces (e.g., #work #happy)">
+                        <p class="hint">Add # before each tag or they'll be added automatically</p>
+                    </div>
+                    <button id="modal-save-entry" class="btn btn-primary">Save Entry</button>
                 </div>
             </div>
         </div>
         
-        <!-- Settings Modal -->
-        <div id="settings-modal" class="modal hidden">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2>Settings</h2>
-                    <button class="close-modal" id="close-settings-modal">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <div class="settings-section">
-                        <h3>Appearance</h3>
-                        <div class="settings-item">
-                            <span>Theme</span>
-                            <div class="theme-switch-container">
-                                <label class="theme-switch">
-                                    <input type="checkbox" id="theme-switch-checkbox">
-                                    <span class="slider round"></span>
-                                </label>
-                                <span id="theme-label">Light</span>
-                            </div>
-                        </div>
-                    </div>
-                      <div class="settings-section">
-                        <h3>Account</h3>
-                        <div class="settings-item">
-                            <span>Reset Password</span>
-                            <button id="reset-password-btn" class="btn btn-outline">Send Reset Email</button>
-                        </div>
-                        <div class="settings-item">
-                            <span>Export All Data</span>
-                            <button id="export-all-btn" class="btn btn-outline">Export</button>
-                        </div>
-                    </div>
-                    <div class="settings-section">
-                        <h3>Data</h3>
-                        <div class="settings-item">
-                            <span>Export All Data</span>
-                            <button id="export-all-btn" class="btn btn-outline">Export</button>
-                        </div>
-                    </div>
-                </div>
+        <!-- Profile View -->
+        <div class="profile-view" id="profile-view" style="display: none;">
+            <div class="profile-header">
+                <h2>Profile & Settings</h2>
+                <button class="btn-icon" id="close-profile-view">
+                    <i class="material-icons">arrow_back</i>
+                </button>
             </div>
-        </div>
-        <!-- App Info Modal -->
-        <div id="app-info-modal" class="modal hidden">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2>About This App</h2>
-                    <button class="close-modal" id="close-app-info-modal">&times;</button>
+            <div class="profile-content">
+                <div class="profile-info">
+                    <div class="profile-avatar">
+                        <i class="material-icons">account_circle</i>
+                    </div>
+                    <h3 id="profile-email">user@example.com</h3>
+                    <div class="user-stats">
+                        <div class="stat-item">
+                            <span id="entry-count">0</span>
+                            <span>Entries</span>
+                        </div>
+                        <div class="stat-item">
+                            <span id="days-count">0</span>
+                            <span>Days</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="modal-body">
-                    <p><strong>Your Digital Flow</strong> is a modern timeline diary app for tracking your daily notes, moods, and memories. Built with Firebase for secure, real-time data sync and a beautiful, responsive UI for all devices.</p>
-                    <ul>
-                        <li>Track your day with notes, moods, and images</li>
-                        <li>Search and filter your entries</li>
-                        <li>Export your data anytime</li>
-                        <li>100% private and secure</li>
-                    </ul>
-                    <p style="font-size:0.9em;color:#888;">Version 1.0 &copy; 2025 Your Digital Flow</p>
+                
+                <div class="search-section card-section">
+                    <h4><i class="material-icons">search</i> Search Entries</h4>
+                    <div class="search-box">
+                        <input type="text" id="profile-search" placeholder="Search by title, tag, or description">
+                        <button class="btn-icon" id="clear-search">
+                            <i class="material-icons">clear</i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="filter-section card-section">
+                    <h4><i class="material-icons">filter_alt</i> Filter by Mood</h4>
+                    <div class="mood-filters">
+                        <button class="mood-filter" data-mood="😊 Happy">😊</button>
+                        <button class="mood-filter" data-mood="😢 Sad">😢</button>
+                        <button class="mood-filter" data-mood="😠 Angry">😠</button>
+                        <button class="mood-filter" data-mood="😴 Tired">😴</button>
+                        <button class="mood-filter" data-mood="😌 Relaxed">😌</button>
+                    </div>
+                    
+                    <h4><i class="material-icons">tag</i> Filter by Tags</h4>
+                    <div class="tag-filters" id="profile-tag-filters">
+                        <!-- Tags will be populated dynamically -->
+                    </div>
+                    <button id="clear-filters" class="btn btn-sm btn-outline mt-10">Clear All Filters</button>
+                </div>
+                
+                <div class="export-section card-section">
+                    <h4><i class="material-icons">download</i> Export Entries</h4>
+                    <div class="export-buttons">
+                        <button id="profile-export-day" class="btn btn-outline">
+                            <i class="material-icons">today</i> Export Day
+                        </button>
+                        <button id="profile-export-month" class="btn btn-outline">
+                            <i class="material-icons">date_range</i> Export Month
+                        </button>
+                    </div>
+                    <div class="export-format">
+                        <p>Format:</p>
+                        <div class="radio-group">
+                            <label>
+                                <input type="radio" name="profile-export-format" value="json" checked>
+                                <span class="radio-label">JSON</span>
+                            </label>
+                            <label>
+                                <input type="radio" name="profile-export-format" value="txt">
+                                <span class="radio-label">TXT</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="theme-section card-section">
+                    <h4><i class="material-icons">palette</i> App Theme</h4>
+                    <div class="theme-toggle">
+                        <span class="material-icons">light_mode</span>
+                        <label class="switch">
+                            <input type="checkbox" id="profile-theme-toggle">
+                            <span class="slider round"></span>
+                        </label>
+                        <span class="material-icons">dark_mode</span>
+                    </div>
+                </div>
+                
+                <button id="logout-button" class="btn btn-outline btn-danger w-100">
+                    <i class="material-icons mr-5">logout</i> Logout
+                </button>
+                
+                <div class="app-info mt-20">
+                    <p class="text-center text-muted">Your Digital Flow v1.0</p>
+                    <p class="text-center text-muted">© 2025 All Rights Reserved</p>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.6.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.6.0/firebase-database-compat.js"></script>
     
-    <script>
-        // Firebase configuration - REPLACE WITH YOUR OWN CONFIG
-        const firebaseConfig = {
-            apiKey: "AIzaSyA0s9vHEkDR0lWEXIsI8TvcHHjX9TQ5xXk",
-            authDomain: "connectchat-d3713.firebaseapp.com",
-            databaseURL: "https://connectchat-d3713-default-rtdb.firebaseio.com",
-            projectId: "connectchat-d3713",
-            storageBucket: "connectchat-d3713.firebasestorage.app",
-            messagingSenderId: "393420495514",
-            appId: "1:393420495514:web:4ff7e73efe3d68172f5d23"
-        };
-        
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-    </script>
-      <!-- Application Scripts -->
-    <script src="./js/utils.js"></script>
-    <script>
-        // Ensure Utils is defined before loading other scripts
-        if (typeof Utils === "undefined") {
-            console.error("Utils is not defined! Check the utils.js file.");
-        }
-    </script>
-    <script src="./js/auth.js"></script>
-    <script src="./js/db.js"></script>
-    <script src="./js/ui.js"></script>
-    
-    <!-- Initialize the application -->
-    <script>        document.addEventListener('DOMContentLoaded', function() {
-            // Ensure all required objects are available globally
-            if (typeof Utils === "undefined") {
-                console.error("Utils is not defined! Check utils.js loading.");
-                return;
-            }
-
-            if (typeof Auth === "undefined") {
-                console.error("Auth is not defined! Check auth.js loading.");
-                return;
-            }
-
-            if (typeof DB === "undefined") {
-                console.error("DB is not defined! Check db.js loading.");
-                return;
-            }
-
-            if (typeof UI === "undefined") {
-                console.error("UI is not defined! Check ui.js loading.");
-                return;
-            }
-              // Initialize auth module and theme
-            Auth.init();
-            Utils.initTheme();
-            Utils.initMobileResponsiveness();
-            
-            // Show success notifications
-            const params = new URLSearchParams(window.location.search);
-            if (params.has('signupsuccess')) {
-                alert('Account created successfully! Please log in.');
-            }
-        });
-    </script>
+    <!-- App Scripts -->
+    <script src="scripts/firebase-config.js"></script>
+    <script src="scripts/auth.js"></script>
+    <script src="scripts/calendar.js"></script>
+    <script src="scripts/entries.js"></script>
+    <script src="scripts/ui.js"></script>
+    <script src="scripts/app.js"></script>
+    <script src="scripts/calendar.js"></script>
+    <script src="scripts/entries.js"></script>
+    <script src="scripts/ui.js"></script>
+    <script src="scripts/app.js"></script>
 </body>
 </html>
