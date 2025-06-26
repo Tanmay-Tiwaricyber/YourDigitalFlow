@@ -18,5 +18,21 @@ try {
 }
 
 // Get database and auth references
-const auth = firebase.auth();
-const database = firebase.database();
+let auth, database;
+try {
+    auth = firebase.auth();
+    database = firebase.database();
+    console.log("Firebase auth and database references created successfully");
+    
+    // Register auth state observer
+    firebase.auth().onAuthStateChanged((user) => {
+        if (user) {
+            console.log("Auth state changed: User is signed in", user.uid);
+            console.log("Email:", user.email);
+        } else {
+            console.log("Auth state changed: User is signed out");
+        }
+    });
+} catch (error) {
+    console.error("Error getting Firebase references:", error);
+}

@@ -26,6 +26,10 @@
                 </div>
                 <button type="submit" id="login-button" class="btn btn-primary">Login</button>
                 <p class="form-switch">Don't have an account? <a href="#" id="show-signup">Sign up</a></p>
+                <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee;">
+                    <button id="test-login" style="background-color: #4CAF50; color: white; padding: 5px 10px; border: none; cursor: pointer; font-size: 12px;">Test Login</button>
+                    <p style="font-size: 10px; color: #666; margin-top: 5px;">Use only for troubleshooting</p>
+                </div>
             </form>
             
             <!-- Signup Form -->
@@ -374,6 +378,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.6.0/firebase-database-compat.js"></script>
     
     <!-- App Scripts -->
+    <script src="scripts/utils.js"></script>
     <script src="scripts/firebase-config.js"></script>
     <script src="scripts/auth.js"></script>
     <script src="scripts/calendar.js"></script>
@@ -381,5 +386,17 @@
     <script src="scripts/edit.js"></script>
     <script src="scripts/ui.js"></script>
     <script src="scripts/app.js"></script>
+    
+    <!-- Run diagnostic checks -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check Firebase status after a short delay
+            setTimeout(() => {
+                if (typeof checkFirebaseStatus === 'function') {
+                    checkFirebaseStatus();
+                }
+            }, 1000);
+        });
+    </script>
 </body>
 </html>
