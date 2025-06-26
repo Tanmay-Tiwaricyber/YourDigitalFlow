@@ -1,7 +1,5 @@
 // Authentication related functionality
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('Auth module loaded');
-    
     // DOM Elements
     const authContainer = document.getElementById('auth-container');
     const appContainer = document.getElementById('app-container');
@@ -11,613 +9,311 @@ document.addEventListener('DOMContentLoaded', () => {
     const showLoginLink = document.getElementById('show-login');
     const loginButton = document.getElementById('login-button');
     const signupButton = document.getElementById('signup-button');
-    const logoutButton = document.getElementById('logout-button');
+    const logoutButtons = document.querySelectorAll('#logout-button, #sidebar-logout-button');
     const profileEmail = document.getElementById('profile-email');
+    const sidebarUserGreeting = document.getElementById('sidebar-user-greeting');
+    const profileSince = document.getElementById('profile-since');
     
-    // Check elements are loaded
-    console.log('Auth container found:', !!authContainer);
-    console.log('Login form found:', !!loginForm);
-    console.log('Login button found:', !!loginButton);
+    // Toggle password visibility
+    const togglePasswordButtons = document.querySelectorAll('.toggle-password');
+    togglePasswordButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const input = this.previousElementSibling;
+            const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+            input.setAttribute('type', type);
+            this.textContent = type === 'password' ? 'visibility_off' : 'visibility';
+        });
+    });
 
-    // Toggle between login and signup forms
+    // Toggle between login and signup forms with fade animation
     showSignupLink.addEventListener('click', (e) => {
         e.preventDefault();
-        loginForm.style.display = 'none';
-        signupForm.style.display = 'block';
+        loginForm.style.opacity = '0';
+        setTimeout(() => {
+            loginForm.style.display = 'none';
+            signupForm.style.display = 'block';
+            setTimeout(() => {
+                signupForm.style.opacity = '1';
+            }, 10);
+        }, 300);
     });
 
     showLoginLink.addEventListener('click', (e) => {
         e.preventDefault();
-        signupForm.style.display = 'none';
-        loginForm.style.display = 'block';
+        signupForm.style.opacity = '0';
+        setTimeout(() => {
+            signupForm.style.display = 'none';
+            loginForm.style.display = 'block';
+            setTimeout(() => {
+                loginForm.style.opacity = '1';
+            }, 10);
+        }, 300);
     });
 
     // Login functionality
-    loginForm.addEventListener('submit', function(e) {
-        // Prevent default form submission
-        e.preventDefault();
-        
-        console.log('Login form submitted');
+    loginButton.addEventListener('click', () => {
         const email = document.getElementById('login-email').value;
         const password = document.getElementById('login-password').value;
         
         // Basic validation
         if (!email || !password) {
-            console.error('Validation error: Missing email or password');
             showToast('Please enter both email and password', 'error');
             return;
         }
         
-        console.log('Attempting to sign in with Firebase', { email });
-        
-        // Check if Firebase is initialized
-        if (!firebase.apps.length) {
-            console.error('Firebase has not been initialized!');
-            showToast('Application error: Firebase not initialized', 'error');
-            return;
-        }
-        
-        // Check if auth is available
-        if (!auth) {
-            console.error('Firebase auth is not available');
-            showToast('Application error: Authentication system unavailable', 'error');
-            return;
-        }
-        
-        // Disable the login button to prevent multiple submissions
+        // Change button state to loading
         loginButton.disabled = true;
-        loginButton.textContent = 'Signing in...';
+        loginButton.innerHTML = '<i class="material-icons spin">refresh</i> Logging in...';
         
-        // Show loading toast
-        showToast('Signing in...', 'info');
-        
-        // Use retry function with direct Firebase auth for improved reliability
-        retryFirebaseOperation(() => {
-            return firebase.auth().signInWithEmailAndPassword(email, password);
-        }, 3, 800)
+        // Sign in with Firebase
+        auth.signInWithEmailAndPassword(email, password)
             .then((userCredential) => {
                 // Clear login form
                 document.getElementById('login-email').value = '';
                 document.getElementById('login-password').value = '';
                 
-                console.log('Login successful', userCredential.user.uid);
-                const toast = showToast('Login successful! Redirecting...', 'success');
-                
-                // Wait for toast to be visible (shorter delay) then transition
-                setTimeout(() => {
-                    // Manually update UI after successful login using smooth transition
-                    updateUIAfterAuth(userCredential.user);
-                }, 600);
+                showToast('Login successful!', 'success');
             })
             .catch((error) => {
-                console.error('Login error:', error.code, error.message);
-                
-                // Show user-friendly error messages based on Firebase error codes
-                let errorMessage = error.message;
-                switch(error.code) {
-                    case 'auth/invalid-email':
-                        errorMessage = 'Invalid email format. Please check and try again.';
-                        break;
-                    case 'auth/user-not-found':
-                        errorMessage = 'No account found with this email. Please sign up first.';
-                        break;
-                    case 'auth/wrong-password':
-                        errorMessage = 'Incorrect password. Please try again.';
-                        break;
-                    case 'auth/too-many-requests':
-                        errorMessage = 'Too many failed login attempts. Please try again later or reset your password.';
-                        break;
-                    case 'auth/network-request-failed':
-                        errorMessage = 'Network error. Please check your internet connection.';
-                        break;
-                }
-                
-                showToast(`Login failed: ${errorMessage}`, 'error');
+                showToast(`Login failed: ${error.message}`, 'error');
+                console.error("Login error:", error);
             })
             .finally(() => {
-                // Re-enable the login button
+                // Reset button state
                 loginButton.disabled = false;
-                loginButton.textContent = 'Login';
+                loginButton.innerHTML = 'Login';
             });
     });
 
     // Signup functionality
-    signupForm.addEventListener('submit', function(e) {
-        // Prevent default form submission
-        e.preventDefault();
-        
-        console.log('Signup form submitted');
+    signupButton.addEventListener('click', () => {
         const email = document.getElementById('signup-email').value;
         const password = document.getElementById('signup-password').value;
         const confirmPassword = document.getElementById('signup-confirm-password').value;
         
         // Basic validation
         if (!email || !password) {
-            console.error('Validation error: Missing email or password');
             showToast('Please enter both email and password', 'error');
             return;
         }
         
         if (password !== confirmPassword) {
-            console.error('Validation error: Passwords do not match');
             showToast('Passwords do not match', 'error');
             return;
         }
         
-        console.log('Attempting to create account with Firebase', { email });
-        
-        // Check if Firebase is initialized
-        if (!firebase.apps.length) {
-            console.error('Firebase has not been initialized!');
-            showToast('Application error: Firebase not initialized', 'error');
+        // Password strength check
+        if (password.length < 6) {
+            showToast('Password must be at least 6 characters', 'error');
             return;
         }
         
-        // Disable the signup button to prevent multiple submissions
+        // Change button state to loading
         signupButton.disabled = true;
-        signupButton.textContent = 'Creating account...';
+        signupButton.innerHTML = '<i class="material-icons spin">refresh</i> Creating account...';
         
-        // Create user with Firebase using retry function for improved reliability
-        retryFirebaseOperation(() => {
-            return firebase.auth().createUserWithEmailAndPassword(email, password);
-        }, 3, 800)
+        // Create user with Firebase
+        auth.createUserWithEmailAndPassword(email, password)
             .then((userCredential) => {
+                // Store account creation date
+                const user = userCredential.user;
+                const creationDate = new Date().toISOString();
+                database.ref(`users/${user.uid}/profile`).set({
+                    email: user.email,
+                    creationDate: creationDate
+                });
+                
                 // Clear signup form
                 document.getElementById('signup-email').value = '';
                 document.getElementById('signup-password').value = '';
                 document.getElementById('signup-confirm-password').value = '';
                 
-                console.log('Account created successfully', userCredential.user.uid);
-                showToast('Account created! Welcome to Your Digital Flow', 'success');
-                
-                // Short delay before transition to ensure toast is visible
-                setTimeout(() => {
-                    // Manually update UI after successful signup with smooth transition
-                    updateUIAfterAuth(userCredential.user);
-                }, 600);
+                showToast('Account created successfully!', 'success');
             })
             .catch((error) => {
-                console.error('Signup error:', error.code, error.message);
-                
-                // Show user-friendly error messages based on Firebase error codes
-                let errorMessage = error.message;
-                switch(error.code) {
-                    case 'auth/email-already-in-use':
-                        errorMessage = 'This email is already registered. Please login instead.';
-                        break;
-                    case 'auth/invalid-email':
-                        errorMessage = 'Invalid email format. Please enter a valid email address.';
-                        break;
-                    case 'auth/weak-password':
-                        errorMessage = 'Password is too weak. Please use at least 6 characters.';
-                        break;
-                    case 'auth/network-request-failed':
-                        errorMessage = 'Network error. Please check your internet connection.';
-                        break;
-                    case 'auth/operation-not-allowed':
-                        errorMessage = 'Email/password registration is not enabled. Please contact support.';
-                        break;
-                }
-                
-                showToast(`Signup failed: ${errorMessage}`, 'error');
+                showToast(`Signup failed: ${error.message}`, 'error');
+                console.error("Signup error:", error);
             })
             .finally(() => {
-                // Re-enable the signup button
+                // Reset button state
                 signupButton.disabled = false;
-                signupButton.textContent = 'Sign Up';
+                signupButton.innerHTML = 'Sign Up';
             });
     });
 
     // Logout functionality
-    logoutButton.addEventListener('click', () => {
-        auth.signOut()
-            .then(() => {
-                showToast('Logged out successfully', 'success');
-            })
-            .catch((error) => {
-                showToast(`Logout failed: ${error.message}`, 'error');
-            });
+    logoutButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            // Change button state
+            button.disabled = true;
+            
+            auth.signOut()
+                .then(() => {
+                    showToast('Logged out successfully', 'success');
+                })
+                .catch((error) => {
+                    showToast(`Logout failed: ${error.message}`, 'error');
+                })
+                .finally(() => {
+                    button.disabled = false;
+                });
+        });
     });
 
-    // Auth state change listener with improved error handling and transitions
-    firebase.auth().onAuthStateChanged(function(user) {
-        console.log("Auth state change detected", user ? "Signed in" : "Signed out");
-        
-        // Safety check for DOM elements
-        const authContainerRef = authContainer || document.getElementById('auth-container');
-        const appContainerRef = appContainer || document.getElementById('app-container');
-            
-        if (!authContainerRef || !appContainerRef) {
-            console.error("Critical error: Cannot find containers");
-            showToast("Application error: UI elements missing", "error");
-            return;
-        }
-        
+    // Auth state change listener
+    auth.onAuthStateChanged((user) => {
         if (user) {
-            // User is signed in - check Firebase connection first
-            console.log("User authenticated:", user.uid, user.email);
+            // User is signed in
+            authContainer.style.display = 'none';
+            appContainer.style.display = 'flex';
             
-            try {
-                // Check if database is accessible
-                const isFirebaseDefined = typeof firebase !== 'undefined' && firebase.apps.length > 0;
-                if (!isFirebaseDefined) {
-                    console.error("Firebase not initialized in auth state change");
-                    showToast("Connection issue: Trying to restore session", "warning");
-                    // Try to reinitialize Firebase
-                    if (typeof initializeFirebase === 'function') {
-                        initializeFirebase();
+            // Update user info in UI
+            if (profileEmail) {
+                profileEmail.textContent = user.email;
+            }
+            
+            if (sidebarUserGreeting) {
+                sidebarUserGreeting.textContent = `Hello, ${user.email.split('@')[0]}!`;
+            }
+            
+            // Get user profile info
+            database.ref(`users/${user.uid}/profile`).once('value', snapshot => {
+                if (snapshot.exists() && profileSince) {
+                    const profile = snapshot.val();
+                    if (profile.creationDate) {
+                        const date = new Date(profile.creationDate);
+                        const formattedDate = date.toLocaleDateString('en-US', {
+                            month: 'long',
+                            year: 'numeric'
+                        });
+                        profileSince.textContent = `Member since ${formattedDate}`;
                     }
                 }
-                
-                // Ensure scripts are loaded before proceeding
-                ensureScriptsLoaded(() => {
-                    // Use smooth transition to show app
-                    transitionContainers(authContainerRef, appContainerRef, () => {
-                        // Update UI elements after transition completes
-                        if (profileEmail) {
-                            profileEmail.textContent = user.email;
-                        }
-                        
-                        // Load user's entries for today
-                        if (typeof loadEntries === 'function') {
-                            console.log("Loading entries for today");
-                            loadEntries(user.uid, getCurrentDateString());
-                        } 
-                        
-                        // Mark calendar dates with entries
-                        if (typeof markCalendarDatesWithEntries === 'function') {
-                            console.log("Marking calendar dates with entries");
-                            markCalendarDatesWithEntries(user.uid);
-                        } 
-                        
-                        // Update user stats in profile
-                        if (typeof updateUserStats === 'function') {
-                            console.log("Updating user stats");
-                            updateUserStats(user.uid);
-                        }
-                    });
-                    
-                    // Show welcome toast on first login/signup
-                    const isFirstLogin = sessionStorage.getItem('firstLogin') !== 'false';
-                    if (isFirstLogin) {
-                        showToast(`Welcome, ${user.email}! Your digital diary is ready.`, 'success');
-                        sessionStorage.setItem('firstLogin', 'false');
-                    }
-                });
-            } catch (error) {
-                console.error("Error in auth state change handler:", error);
-                showToast("An error occurred while loading your data. Please refresh the page.", "error");
-            }
-        } else {
-            // User is signed out - use smooth transition
-            console.log("User is signed out, transitioning to auth container");
-            transitionContainers(appContainerRef, authContainerRef, () => {
-                console.log("Transition to authentication view complete");
             });
+            
+            // Load user's entries for today
+            loadEntries(user.uid, getCurrentDateString());
+            
+            // Mark calendar dates with entries
+            markCalendarDatesWithEntries(user.uid);
+            
+            // Update user stats
+            updateUserStats(user.uid);
+        } else {
+            // User is signed out
+            authContainer.style.display = 'flex';
+            appContainer.style.display = 'none';
+            
+            // Reset forms and fade in login form
+            signupForm.style.display = 'none';
+            loginForm.style.display = 'block';
+            loginForm.style.opacity = '1';
+            signupForm.style.opacity = '0';
         }
-    }, (error) => {
-        // Add explicit error handling for auth state observer
-        console.error("Auth state observer error:", error);
-        showToast("Authentication error: " + (error.message || "Unknown error"), "error");
     });
     
-    // Authentication setup complete
+    // Enter key to submit forms
+    document.getElementById('login-password').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            loginButton.click();
+        }
+    });
+    
+    document.getElementById('signup-confirm-password').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            signupButton.click();
+        }
+    });
 });
 
-// Fallback for getCurrentDateString if it's not defined elsewhere
-if (typeof getCurrentDateString !== 'function') {
-    console.log('Defining fallback getCurrentDateString function');
-    function getCurrentDateString() {
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const day = String(now.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-    }
-}
-
-// Function to manually update UI after authentication
-function updateUIAfterAuth(user) {
-    console.log("Manually updating UI after auth");
+// Update user statistics
+function updateUserStats(userId) {
+    const totalEntriesEl = document.getElementById('total-entries');
+    const daysWithEntriesEl = document.getElementById('days-with-entries');
+    const mostCommonMoodEl = document.getElementById('most-common-mood');
     
-    // Safety check for DOM elements
-    const authContainerRef = authContainer || document.getElementById('auth-container');
-    const appContainerRef = appContainer || document.getElementById('app-container');
+    if (!totalEntriesEl || !daysWithEntriesEl || !mostCommonMoodEl) return;
     
-    if (!authContainerRef || !appContainerRef) {
-        console.error("Auth container or app container not found!");
-        showToast("Application error: UI elements missing", "error");
-        return;
-    }
-    
-    if (user) {
-        // Ensure all scripts are loaded before proceeding
-        ensureScriptsLoaded(() => {
-            // User is authenticated - use smooth transition
-            transitionContainers(authContainerRef, appContainerRef, () => {
-                console.log("Auth container transition complete");
-                
-                // Update profile email if available
-                if (profileEmail) {
-                    profileEmail.textContent = user.email;
-                }
-                
-                // Load user's entries for today
-                if (typeof loadEntries === 'function') {
-                    console.log("Loading entries for today");
-                    loadEntries(user.uid, getCurrentDateString());
-                }
-                
-                // Mark calendar dates with entries
-                if (typeof markCalendarDatesWithEntries === 'function') {
-                    console.log("Marking calendar dates with entries");
-                    markCalendarDatesWithEntries(user.uid);
-                }
-                
-                // Update user stats in profile
-                if (typeof updateUserStats === 'function') {
-                    console.log("Updating user stats");
-                    updateUserStats(user.uid);
-                }
-            });
-        });
-    } else {
-        // User is not authenticated
-        transitionContainers(appContainerRef, authContainerRef, () => {
-            console.log("App container transition complete");
-        });
-    }
-}
-
-// Function to handle smooth transition between auth and app containers
-function transitionContainers(fromContainer, toContainer, callback) {
-    // Add transition effect
-    if (fromContainer && toContainer) {
-        fromContainer.classList.add('fade-out');
-        
-        // Wait for fade-out animation to complete
-        setTimeout(() => {
-            fromContainer.style.display = 'none';
-            toContainer.style.display = 'flex';
-            toContainer.classList.add('fade-in');
+    database.ref(`users/${userId}/entries`).once('value', snapshot => {
+        if (snapshot.exists()) {
+            // Initialize counters
+            let totalEntries = 0;
+            let daysWithEntries = 0;
+            const moodCounts = {};
             
-            // Clear classes after animation completes
-            setTimeout(() => {
-                fromContainer.classList.remove('fade-out');
-                toContainer.classList.remove('fade-in');
-                
-                // Execute callback if provided
-                if (typeof callback === 'function') {
-                    callback();
+            snapshot.forEach(dateSnapshot => {
+                daysWithEntries++;
+                dateSnapshot.forEach(timeSnapshot => {
+                    totalEntries++;
+                    const entry = timeSnapshot.val();
+                    if (entry.mood) {
+                        moodCounts[entry.mood] = (moodCounts[entry.mood] || 0) + 1;
+                    }
+                });
+            });
+            
+            // Update UI
+            totalEntriesEl.textContent = totalEntries;
+            daysWithEntriesEl.textContent = daysWithEntries;
+            
+            // Find most common mood
+            let maxCount = 0;
+            let mostCommonMood = '-';
+            
+            for (const mood in moodCounts) {
+                if (moodCounts[mood] > maxCount) {
+                    maxCount = moodCounts[mood];
+                    mostCommonMood = mood;
                 }
-            }, 500);
-        }, 300);
-    } else {
-        console.error("Container elements not found for transition");
-        
-        // Still execute callback if containers are missing
-        if (typeof callback === 'function') {
-            callback();
-        }
-    }
-}
-
-// Function to ensure all required scripts are loaded before proceeding
-function ensureScriptsLoaded(callback) {
-    console.log("Ensuring all required scripts are loaded");
-    
-    // List of required script paths
-    const requiredScripts = [
-        'scripts/utils.js',
-        'scripts/entries.js',
-        'scripts/calendar.js',
-        'scripts/ui.js'
-    ];
-    
-    // Track loaded scripts
-    let loadedCount = 0;
-    
-    // Check if all required functions are already available
-    if (typeof loadEntries === 'function' && 
-        typeof markCalendarDatesWithEntries === 'function' &&
-        typeof updateUserStats === 'function') {
-        console.log("All required functions are already available");
-        callback();
-        return;
-    }
-    
-    // Helper to load a script
-    function loadScriptIfNeeded(src) {
-        // Check if script is already loaded
-        const existingScript = document.querySelector(`script[src="${src}"]`);
-        if (existingScript) {
-            console.log(`${src} already loaded`);
-            scriptLoaded();
-            return;
-        }
-        
-        console.log(`Loading ${src}`);
-        const script = document.createElement('script');
-        script.src = src;
-        script.async = true;
-        
-        script.onload = () => {
-            console.log(`${src} loaded successfully`);
-            scriptLoaded();
-        };
-        
-        script.onerror = (error) => {
-            console.error(`Error loading ${src}:`, error);
-            scriptLoaded();
-        };
-        
-        document.head.appendChild(script);
-    }
-    
-    // Track loaded scripts and call callback when all are loaded
-    function scriptLoaded() {
-        loadedCount++;
-        if (loadedCount >= requiredScripts.length) {
-            console.log("All required scripts loaded");
-            // Small delay to ensure functions are defined
-            setTimeout(callback, 100);
-        }
-    }
-    
-    // Start loading scripts
-    requiredScripts.forEach(loadScriptIfNeeded);
-}
-
-// Enhanced helper function to show toast notifications with improved stacking and queuing
-function showToast(message, type = 'success') {
-    console.log(`Toast: ${type} - ${message}`);
-    
-    // Create toast container if it doesn't exist
-    let toastContainer = document.getElementById('toast-container');
-    if (!toastContainer) {
-        toastContainer = document.createElement('div');
-        toastContainer.id = 'toast-container';
-        toastContainer.className = 'toast-container';
-        document.body.appendChild(toastContainer);
-    }
-    
-    // Manage toast queue/limit to prevent overcrowding
-    const maxToasts = 3;
-    if (toastContainer.children.length >= maxToasts) {
-        // Remove the oldest toast if we're at the limit
-        const oldestToast = toastContainer.children[0];
-        if (oldestToast && oldestToast._timeout) {
-            clearTimeout(oldestToast._timeout);
-        }
-        toastContainer.removeChild(oldestToast);
-    }
-    
-    // Create toast element with improved accessibility
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    toast.setAttribute('role', 'alert');
-    toast.setAttribute('aria-live', 'assertive');
-    
-    // For error toasts, ensure they stay visible longer
-    const displayDuration = type === 'error' ? 8000 : 
-                           type === 'warning' ? 6000 : 5000;
-    
-    // Add appropriate icon based on toast type
-    let icon = '';
-    switch(type) {
-        case 'success':
-            icon = '<i class="material-icons">check_circle</i>';
-            break;
-        case 'error':
-            icon = '<i class="material-icons">error</i>';
-            break;
-        case 'warning':
-            icon = '<i class="material-icons">warning</i>';
-            break;
-        case 'info':
-            icon = '<i class="material-icons">info</i>';
-            break;
-    }
-    
-    // Add content with icon
-    toast.innerHTML = `
-        <div class="toast-content">
-            ${icon}
-            <span>${message}</span>
-        </div>
-        <button class="toast-close" aria-label="Close notification">
-            <i class="material-icons">close</i>
-        </button>
-    `;
-    
-    // Add to container
-    toastContainer.appendChild(toast);
-    
-    // Force reflow to ensure animation works
-    void toast.offsetWidth;
-    toast.classList.add('show');
-    
-    // Add close button functionality with improved reliability
-    const closeBtn = toast.querySelector('.toast-close');
-    if (closeBtn) {
-        closeBtn.addEventListener('click', () => {
-            dismissToast(toast, toastContainer);
-        });
-    }
-    
-    // Add tap-to-dismiss for mobile users (on the toast itself, not just the close button)
-    toast.addEventListener('click', (e) => {
-        // Only dismiss if clicked on the toast but not on the close button 
-        // (which has its own handler)
-        if (e.target.closest('.toast-close') === null) {
-            dismissToast(toast, toastContainer);
+            }
+            
+            mostCommonMoodEl.textContent = mostCommonMood;
+        } else {
+            // No entries yet
+            totalEntriesEl.textContent = '0';
+            daysWithEntriesEl.textContent = '0';
+            mostCommonMoodEl.textContent = '-';
         }
     });
-    
-    // Helper function to dismiss toast with animation
-    function dismissToast(toastElement, container) {
-        if (!toastElement.isConnected) return;
-        
-        // Clear existing timeout
-        if (toastElement._timeout) {
-            clearTimeout(toastElement._timeout);
-        }
-        
-        // Start dismiss animation
-        toastElement.classList.remove('show');
-        
-        // Remove after animation completes
-        setTimeout(() => {
-            try {
-                if (toastElement.isConnected) {
-                    container.removeChild(toastElement);
-                }
-                
-                // Remove container if empty
-                if (container.children.length === 0 && container.isConnected) {
-                    document.body.removeChild(container);
-                }
-            } catch (error) {
-                console.error('Error removing toast:', error);
-            }
-        }, 300);
-    }
-    
-    // Auto-remove after timeout
-    const timeout = setTimeout(() => {
-        dismissToast(toast, toastContainer);
-    }, displayDuration);
-    
-    // Store timeout to allow manual clearing
-    toast._timeout = timeout;
-    
-    return toast;
 }
 
-// Helper function to retry Firebase operations
-async function retryFirebaseOperation(operation, maxRetries = 3, delay = 1000) {
-    let lastError;
+// Helper function to show toast notifications with improved styling
+function showToast(message, type = 'success') {
+    // Remove existing toasts
+    const existingToasts = document.querySelectorAll('.toast');
+    existingToasts.forEach(toast => {
+        toast.remove();
+    });
     
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-        try {
-            console.log(`Attempt ${attempt} of ${maxRetries}`);
-            return await operation();
-        } catch (error) {
-            lastError = error;
-            console.error(`Attempt ${attempt} failed:`, error);
-            
-            // Only retry if it's a retryable error
-            if (!shouldRetryFirebaseOperation(error) || attempt === maxRetries) {
-                break;
-            }
-            
-            // Exponential backoff
-            const backoffDelay = delay * Math.pow(1.5, attempt - 1);
-            console.log(`Retrying in ${backoffDelay}ms...`);
-            await new Promise(resolve => setTimeout(resolve, backoffDelay));
-        }
+    // Create toast element with icon
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    
+    let icon;
+    switch (type) {
+        case 'success':
+            icon = 'check_circle';
+            break;
+        case 'error':
+            icon = 'error';
+            break;
+        case 'warning':
+            icon = 'warning';
+            break;
+        default:
+            icon = 'info';
     }
     
-    // If we get here, all retries failed
-    throw lastError;
+    toast.innerHTML = `
+        <span class="material-icons toast-icon">${icon}</span>
+        <span class="toast-message">${message}</span>
+    `;
+    
+    // Add to document
+    document.body.appendChild(toast);
+    
+    // Remove after animation completes
+    setTimeout(() => {
+        document.body.removeChild(toast);
+    }, 3000);
 }

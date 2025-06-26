@@ -16,35 +16,51 @@
             <p class="subtitle">Your personal digital diary</p>
             
             <!-- Login Form -->
-            <form id="login-form">
+            <div id="login-form">
                 <h2>Login</h2>
                 <div class="input-group">
-                    <input type="email" id="login-email" placeholder="Email" required>
+                    <div class="input-icon">
+                        <i class="material-icons">email</i>
+                        <input type="email" id="login-email" placeholder="Email" required>
+                    </div>
                 </div>
                 <div class="input-group">
-                    <input type="password" id="login-password" placeholder="Password" required>
+                    <div class="input-icon">
+                        <i class="material-icons">lock</i>
+                        <input type="password" id="login-password" placeholder="Password" required>
+                        <i class="material-icons toggle-password">visibility_off</i>
+                    </div>
                 </div>
-                <button type="submit" id="login-button" class="btn btn-primary">Login</button>
+                <button id="login-button" class="btn btn-primary">Login</button>
                 <p class="form-switch">Don't have an account? <a href="#" id="show-signup">Sign up</a></p>
-                    <p style="font-size: 10px; color: #666; margin-top: 5px;">Use only for troubleshooting</p>
-                </div>
-            </form>
+            </div>
             
             <!-- Signup Form -->
-            <form id="signup-form" style="display: none;">
+            <div id="signup-form" style="display: none;">
                 <h2>Sign Up</h2>
                 <div class="input-group">
-                    <input type="email" id="signup-email" placeholder="Email" required>
+                    <div class="input-icon">
+                        <i class="material-icons">email</i>
+                        <input type="email" id="signup-email" placeholder="Email" required>
+                    </div>
                 </div>
                 <div class="input-group">
-                    <input type="password" id="signup-password" placeholder="Password" required>
+                    <div class="input-icon">
+                        <i class="material-icons">lock</i>
+                        <input type="password" id="signup-password" placeholder="Password" required>
+                        <i class="material-icons toggle-password">visibility_off</i>
+                    </div>
                 </div>
                 <div class="input-group">
-                    <input type="password" id="signup-confirm-password" placeholder="Confirm Password" required>
+                    <div class="input-icon">
+                        <i class="material-icons">lock_outline</i>
+                        <input type="password" id="signup-confirm-password" placeholder="Confirm Password" required>
+                        <i class="material-icons toggle-password">visibility_off</i>
+                    </div>
                 </div>
-                <button type="submit" id="signup-button" class="btn btn-primary">Sign Up</button>
+                <button id="signup-button" class="btn btn-primary">Sign Up</button>
                 <p class="form-switch">Already have an account? <a href="#" id="show-login">Login</a></p>
-            </form>
+            </div>
         </div>
     </div>
     
@@ -54,6 +70,7 @@
         <div class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <h2>Your Digital Flow</h2>
+                <p class="user-greeting" id="sidebar-user-greeting">Hello, User!</p>
             </div>
             
             <div class="calendar-container">
@@ -63,23 +80,30 @@
                     <button id="next-month"><i class="material-icons">chevron_right</i></button>
                 </div>
                 <div class="calendar" id="calendar"></div>
+                <div class="calendar-today-button">
+                    <button id="go-to-today" class="btn btn-small">Today</button>
+                </div>
             </div>
             
             <div class="sidebar-search">
-                <input type="text" id="desktop-search" placeholder="Search entries...">
+                <div class="search-icon-wrapper">
+                    <i class="material-icons search-icon">search</i>
+                    <input type="text" id="desktop-search" placeholder="Search entries...">
+                    <i class="material-icons clear-search" id="clear-desktop-search">close</i>
+                </div>
             </div>
             
             <div class="filter-section">
                 <h4>Filter by Mood</h4>
                 <div class="mood-filters">
-                    <button class="mood-filter" data-mood="😊 Happy">😊</button>
-                    <button class="mood-filter" data-mood="😢 Sad">😢</button>
-                    <button class="mood-filter" data-mood="😠 Angry">😠</button>
-                    <button class="mood-filter" data-mood="😴 Tired">😴</button>
-                    <button class="mood-filter" data-mood="😌 Relaxed">😌</button>
+                    <button class="mood-filter" data-mood="😊 Happy" title="Happy">😊</button>
+                    <button class="mood-filter" data-mood="😢 Sad" title="Sad">😢</button>
+                    <button class="mood-filter" data-mood="😠 Angry" title="Angry">😠</button>
+                    <button class="mood-filter" data-mood="😴 Tired" title="Tired">😴</button>
+                    <button class="mood-filter" data-mood="😌 Relaxed" title="Relaxed">😌</button>
                 </div>
                 
-                <h4>Filter by Tags</h4>
+                <h4>Filter by Tags <span class="clear-all-tags" id="clear-all-tags">Clear all</span></h4>
                 <div class="tag-filters" id="tag-filters">
                     <!-- Tags will be populated dynamically -->
                 </div>
@@ -87,8 +111,10 @@
             
             <div class="export-section">
                 <h4>Export Entries</h4>
-                <button id="export-day" class="btn btn-outline">Export Day</button>
-                <button id="export-month" class="btn btn-outline">Export Month</button>
+                <div class="export-buttons">
+                    <button id="export-day" class="btn btn-outline">Day</button>
+                    <button id="export-month" class="btn btn-outline">Month</button>
+                </div>
                 <div class="export-format">
                     <label>
                         <input type="radio" name="export-format" value="json" checked> JSON
@@ -107,11 +133,20 @@
                 </label>
                 <span class="material-icons">dark_mode</span>
             </div>
+            
+            <div class="logout-section">
+                <button id="sidebar-logout-button" class="btn btn-outline btn-danger">
+                    <i class="material-icons">logout</i> Logout
+                </button>
+            </div>
         </div>
         
         <!-- Main Content Area -->
         <div class="main-content">
             <div class="mobile-header">
+                <button id="mobile-menu-toggle" class="btn-icon mobile-only">
+                    <i class="material-icons">menu</i>
+                </button>
                 <h2 id="mobile-date-display">June 26, 2025</h2>
                 <button id="mobile-calendar-toggle" class="btn-icon">
                     <i class="material-icons">calendar_today</i>
@@ -125,7 +160,19 @@
                     <button id="mobile-next-month"><i class="material-icons">chevron_right</i></button>
                 </div>
                 <div class="calendar" id="mobile-calendar"></div>
-                <button id="close-mobile-calendar" class="btn btn-outline btn-sm mt-10">Close</button>
+                <div class="calendar-today-button">
+                    <button id="mobile-go-to-today" class="btn btn-small">Today</button>
+                </div>
+            </div>
+            
+            <div id="date-navigation">
+                <button id="prev-day" class="btn-icon" title="Previous Day">
+                    <i class="material-icons">navigate_before</i>
+                </button>
+                <div id="current-date-display" class="current-date-display">Thursday, June 26, 2025</div>
+                <button id="next-day" class="btn-icon" title="Next Day">
+                    <i class="material-icons">navigate_next</i>
+                </button>
             </div>
             
             <div class="entries-container" id="entries-container">
@@ -136,11 +183,14 @@
                     </div>
                     <h3>No entries for this day</h3>
                     <p>Add your first diary entry by clicking the + button below</p>
+                    <button id="empty-add-entry" class="btn btn-primary">
+                        <i class="material-icons">add</i> Add New Entry
+                    </button>
                 </div>
             </div>
             
             <!-- Desktop Add Entry Button -->
-            <button id="desktop-add-entry" class="floating-btn">
+            <button id="desktop-add-entry" class="floating-btn" title="Add New Entry">
                 <i class="material-icons">add</i>
             </button>
         </div>
@@ -171,83 +221,42 @@
             </div>
             <div class="entry-form">
                 <div class="form-group">
-                    <label for="entry-title">Title <span class="required">*</span></label>
-                    <input type="text" id="entry-title" placeholder="Title your moment" autocomplete="off">
-                    <p class="hint">Give your entry a meaningful title (required)</p>
+                    <label for="entry-title">Title</label>
+                    <input type="text" id="entry-title" placeholder="Title your moment">
                 </div>
                 <div class="form-group">
                     <label for="entry-description">Description</label>
                     <textarea id="entry-description" placeholder="Describe your moment..."></textarea>
-                    <p class="hint">Write about your thoughts, feelings, or experiences</p>
                 </div>
                 <div class="form-group">
                     <label for="entry-time">Time</label>
-                    <input type="time" id="entry-time">
-                    <p class="hint">Time of this moment (defaults to current time if empty)</p>
+                    <div class="time-input-wrapper">
+                        <i class="material-icons">access_time</i>
+                        <input type="time" id="entry-time">
+                    </div>
                 </div>
                 <div class="form-group">
-                    <label>Mood <span class="recommended">recommended</span></label>
+                    <label>Mood</label>
                     <div class="mood-selector">
-                        <button class="mood-btn" data-mood="😊 Happy">😊</button>
-                        <button class="mood-btn" data-mood="😢 Sad">😢</button>
-                        <button class="mood-btn" data-mood="😠 Angry">😠</button>
-                        <button class="mood-btn" data-mood="😴 Tired">😴</button>
-                        <button class="mood-btn" data-mood="😌 Relaxed">😌</button>
+                        <button class="mood-btn" data-mood="😊 Happy" title="Happy">😊</button>
+                        <button class="mood-btn" data-mood="😢 Sad" title="Sad">😢</button>
+                        <button class="mood-btn" data-mood="😠 Angry" title="Angry">😠</button>
+                        <button class="mood-btn" data-mood="😴 Tired" title="Tired">😴</button>
+                        <button class="mood-btn" data-mood="😌 Relaxed" title="Relaxed">😌</button>
                     </div>
                     <input type="hidden" id="selected-mood">
-                    <p class="hint">How are you feeling right now?</p>
                 </div>
                 <div class="form-group">
                     <label for="entry-tags">Tags</label>
-                    <input type="text" id="entry-tags" placeholder="Add tags separated by spaces (e.g., #work #happy)">
-                    <p class="hint">Add # before each tag or they'll be added automatically</p>
-                </div>
-                <button id="save-entry" class="btn btn-primary">Save Entry</button>
-            </div>
-        </div>
-        
-        <!-- Edit Entry Panel (Mobile) -->
-        <div class="entry-panel" id="edit-entry-panel">
-            <div class="entry-panel-header">
-                <h3>Edit Entry</h3>
-                <button class="btn-icon" id="close-edit-panel">
-                    <i class="material-icons">close</i>
-                </button>
-            </div>
-            <div class="entry-form">
-                <div class="form-group">
-                    <label for="edit-entry-title">Title <span class="required">*</span></label>
-                    <input type="text" id="edit-entry-title" placeholder="Title your moment" autocomplete="off">
-                    <p class="hint">Give your entry a meaningful title (required)</p>
-                </div>
-                <div class="form-group">
-                    <label for="edit-entry-description">Description</label>
-                    <textarea id="edit-entry-description" placeholder="Describe your moment..."></textarea>
-                    <p class="hint">Write about your thoughts, feelings, or experiences</p>
-                </div>
-                <div class="form-group">
-                    <label for="edit-entry-time">Time</label>
-                    <input type="time" id="edit-entry-time">
-                    <p class="hint">Time of this moment</p>
-                </div>
-                <div class="form-group">
-                    <label>Mood <span class="recommended">recommended</span></label>
-                    <div class="mood-selector">
-                        <button class="mood-btn" data-mood="😊 Happy">😊</button>
-                        <button class="mood-btn" data-mood="😢 Sad">😢</button>
-                        <button class="mood-btn" data-mood="😠 Angry">😠</button>
-                        <button class="mood-btn" data-mood="😴 Tired">😴</button>
-                        <button class="mood-btn" data-mood="😌 Relaxed">😌</button>
+                    <div class="tags-input-wrapper">
+                        <i class="material-icons">local_offer</i>
+                        <input type="text" id="entry-tags" placeholder="Add tags separated by spaces (e.g., #work #happy)">
                     </div>
-                    <input type="hidden" id="edit-selected-mood">
-                    <p class="hint">How are you feeling right now?</p>
+                    <div class="tags-suggestions" id="tags-suggestions"></div>
                 </div>
-                <div class="form-group">
-                    <label for="edit-entry-tags">Tags</label>
-                    <input type="text" id="edit-entry-tags" placeholder="Add tags separated by spaces (e.g., #work #happy)">
-                    <p class="hint">Add # before each tag or they'll be added automatically</p>
-                </div>
-                <button id="edit-save-entry" class="btn btn-primary">Save Changes</button>
+                <button id="save-entry" class="btn btn-primary">
+                    <i class="material-icons">save</i> Save Entry
+                </button>
             </div>
         </div>
         
@@ -262,110 +271,140 @@
                 </div>
                 <div class="entry-form">
                     <div class="form-group">
-                        <label for="modal-entry-title">Title <span class="required">*</span></label>
-                        <input type="text" id="modal-entry-title" placeholder="Title your moment" autocomplete="off">
-                        <p class="hint">Give your entry a meaningful title (required)</p>
+                        <label for="modal-entry-title">Title</label>
+                        <div class="input-icon">
+                            <i class="material-icons">title</i>
+                            <input type="text" id="modal-entry-title" placeholder="Title your moment">
+                        </div>
                     </div>
                     <div class="form-group">
                         <label for="modal-entry-description">Description</label>
                         <textarea id="modal-entry-description" placeholder="Describe your moment..."></textarea>
-                        <p class="hint">Write about your thoughts, feelings, or experiences</p>
                     </div>
                     <div class="form-group">
                         <label for="modal-entry-time">Time</label>
-                        <input type="time" id="modal-entry-time">
-                        <p class="hint">Time of this moment (defaults to current time if empty)</p>
+                        <div class="input-icon">
+                            <i class="material-icons">access_time</i>
+                            <input type="time" id="modal-entry-time">
+                        </div>
                     </div>
                     <div class="form-group">
-                        <label>Mood <span class="recommended">recommended</span></label>
+                        <label>Mood</label>
                         <div class="mood-selector">
-                            <button class="mood-btn" data-mood="😊 Happy">😊</button>
-                            <button class="mood-btn" data-mood="😢 Sad">😢</button>
-                            <button class="mood-btn" data-mood="😠 Angry">😠</button>
-                            <button class="mood-btn" data-mood="😴 Tired">😴</button>
-                            <button class="mood-btn" data-mood="😌 Relaxed">😌</button>
+                            <button class="mood-btn" data-mood="😊 Happy" title="Happy">😊</button>
+                            <button class="mood-btn" data-mood="😢 Sad" title="Sad">😢</button>
+                            <button class="mood-btn" data-mood="😠 Angry" title="Angry">😠</button>
+                            <button class="mood-btn" data-mood="😴 Tired" title="Tired">😴</button>
+                            <button class="mood-btn" data-mood="😌 Relaxed" title="Relaxed">😌</button>
                         </div>
                         <input type="hidden" id="modal-selected-mood">
-                        <p class="hint">How are you feeling right now?</p>
                     </div>
                     <div class="form-group">
                         <label for="modal-entry-tags">Tags</label>
-                        <input type="text" id="modal-entry-tags" placeholder="Add tags separated by spaces (e.g., #work #happy)">
-                        <p class="hint">Add # before each tag or they'll be added automatically</p>
-                    </div>
-                    <button id="modal-save-entry" class="btn btn-primary">Save Entry</button>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Edit Entry Modal (Desktop) -->
-        <div class="modal" id="edit-entry-modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>Edit Entry</h3>
-                    <button class="btn-icon" id="close-edit-modal">
-                        <i class="material-icons">close</i>
-                    </button>
-                </div>
-                <div class="entry-form">
-                    <div class="form-group">
-                        <label for="modal-edit-entry-title">Title <span class="required">*</span></label>
-                        <input type="text" id="modal-edit-entry-title" placeholder="Title your moment" autocomplete="off">
-                        <p class="hint">Give your entry a meaningful title (required)</p>
-                    </div>
-                    <div class="form-group">
-                        <label for="modal-edit-entry-description">Description</label>
-                        <textarea id="modal-edit-entry-description" placeholder="Describe your moment..."></textarea>
-                        <p class="hint">Write about your thoughts, feelings, or experiences</p>
-                    </div>
-                    <div class="form-group">
-                        <label for="modal-edit-entry-time">Time</label>
-                        <input type="time" id="modal-edit-entry-time">
-                        <p class="hint">Time of this moment</p>
-                    </div>
-                    <div class="form-group">
-                        <label>Mood <span class="recommended">recommended</span></label>
-                        <div class="mood-selector">
-                            <button class="mood-btn" data-mood="😊 Happy">😊</button>
-                            <button class="mood-btn" data-mood="😢 Sad">😢</button>
-                            <button class="mood-btn" data-mood="😠 Angry">😠</button>
-                            <button class="mood-btn" data-mood="😴 Tired">😴</button>
-                            <button class="mood-btn" data-mood="😌 Relaxed">😌</button>
+                        <div class="input-icon">
+                            <i class="material-icons">local_offer</i>
+                            <input type="text" id="modal-entry-tags" placeholder="Add tags separated by spaces (e.g., #work #happy)">
                         </div>
-                        <input type="hidden" id="modal-edit-selected-mood">
-                        <p class="hint">How are you feeling right now?</p>
+                        <div class="tags-suggestions" id="modal-tags-suggestions"></div>
                     </div>
-                    <div class="form-group">
-                        <label for="modal-edit-entry-tags">Tags</label>
-                        <input type="text" id="modal-edit-entry-tags" placeholder="Add tags separated by spaces (e.g., #work #happy)">
-                        <p class="hint">Add # before each tag or they'll be added automatically</p>
-                    </div>
-                    <button id="modal-edit-save-entry" class="btn btn-primary">Save Changes</button>
+                    <button id="modal-save-entry" class="btn btn-primary">
+                        <i class="material-icons">save</i> Save Entry
+                    </button>
                 </div>
             </div>
         </div>
         
-        <!-- Delete Confirmation Modal -->
-        <div class="modal" id="delete-modal">
-            <div class="modal-content delete-modal-content">
-                <div class="modal-header">
-                    <h3>Delete Entry</h3>
-                    <button class="btn-icon" id="close-delete-modal">
-                        <i class="material-icons">close</i>
-                    </button>
-                </div>
-                <div class="delete-confirmation">
-                    <div class="warning-icon">
-                        <i class="material-icons">warning</i>
+        <!-- Profile View -->
+        <div class="profile-view" id="profile-view" style="display: none;">
+            <div class="profile-header">
+                <button id="close-profile" class="btn-icon mobile-only">
+                    <i class="material-icons">arrow_back</i>
+                </button>
+                <h2>Profile & Settings</h2>
+            </div>
+            <div class="profile-content">
+                <div class="profile-info">
+                    <div class="profile-avatar">
+                        <i class="material-icons">account_circle</i>
                     </div>
-                    <p>Are you sure you want to delete "<span id="delete-entry-title"></span>"?</p>
-                    <p class="text-muted">This action cannot be undone.</p>
+                    <h3 id="profile-email">user@example.com</h3>
+                    <p class="profile-since" id="profile-since">Member since June 2025</p>
+                </div>
+                
+                <div class="search-section">
+                    <h4>Search Entries</h4>
+                    <div class="search-icon-wrapper">
+                        <i class="material-icons search-icon">search</i>
+                        <input type="text" id="profile-search" placeholder="Search by title, tag, or description">
+                        <i class="material-icons clear-search" id="clear-profile-search">close</i>
+                    </div>
+                </div>
+                
+                <div class="filter-section">
+                    <h4>Filter by Mood</h4>
+                    <div class="mood-filters">
+                        <button class="mood-filter" data-mood="😊 Happy" title="Happy">😊</button>
+                        <button class="mood-filter" data-mood="😢 Sad" title="Sad">😢</button>
+                        <button class="mood-filter" data-mood="😠 Angry" title="Angry">😠</button>
+                        <button class="mood-filter" data-mood="😴 Tired" title="Tired">😴</button>
+                        <button class="mood-filter" data-mood="😌 Relaxed" title="Relaxed">😌</button>
+                    </div>
                     
-                    <div class="delete-actions">
-                        <button id="cancel-delete" class="btn btn-outline">Cancel</button>
-                        <button id="confirm-delete" class="btn btn-danger">Delete</button>
+                    <h4>Filter by Tags <span class="clear-all-tags" id="profile-clear-all-tags">Clear all</span></h4>
+                    <div class="tag-filters" id="profile-tag-filters">
+                        <!-- Tags will be populated dynamically -->
                     </div>
                 </div>
+                
+                <div class="stats-section">
+                    <h4>Your Stats</h4>
+                    <div class="stats-container">
+                        <div class="stat-item">
+                            <div class="stat-value" id="total-entries">0</div>
+                            <div class="stat-label">Total Entries</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="days-with-entries">0</div>
+                            <div class="stat-label">Days Documented</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="most-common-mood">-</div>
+                            <div class="stat-label">Top Mood</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="export-section">
+                    <h4>Export Entries</h4>
+                    <div class="export-buttons">
+                        <button id="profile-export-day" class="btn btn-outline">Day</button>
+                        <button id="profile-export-month" class="btn btn-outline">Month</button>
+                    </div>
+                    <div class="export-format">
+                        <label>
+                            <input type="radio" name="profile-export-format" value="json" checked> JSON
+                        </label>
+                        <label>
+                            <input type="radio" name="profile-export-format" value="txt"> TXT
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="appearance-section">
+                    <h4>Appearance</h4>
+                    <div class="theme-toggle">
+                        <span class="material-icons">light_mode</span>
+                        <label class="switch">
+                            <input type="checkbox" id="profile-theme-toggle">
+                            <span class="slider round"></span>
+                        </label>
+                        <span class="material-icons">dark_mode</span>
+                    </div>
+                </div>
+                
+                <button id="logout-button" class="btn btn-outline btn-danger">
+                    <i class="material-icons">logout</i> Logout
+                </button>
             </div>
         </div>
     </div>
@@ -376,25 +415,11 @@
     <script src="https://www.gstatic.com/firebasejs/10.6.0/firebase-database-compat.js"></script>
     
     <!-- App Scripts -->
-    <script src="scripts/utils.js"></script>
     <script src="scripts/firebase-config.js"></script>
     <script src="scripts/auth.js"></script>
     <script src="scripts/calendar.js"></script>
     <script src="scripts/entries.js"></script>
-    <script src="scripts/edit.js"></script>
     <script src="scripts/ui.js"></script>
     <script src="scripts/app.js"></script>
-    
-    <!-- Run diagnostic checks -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Check Firebase status after a short delay
-            setTimeout(() => {
-                if (typeof checkFirebaseStatus === 'function') {
-                    checkFirebaseStatus();
-                }
-            }, 1000);
-        });
-    </script>
 </body>
 </html>

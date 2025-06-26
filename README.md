@@ -5,14 +5,13 @@ A responsive digital diary application built using HTML, CSS, and vanilla JavaSc
 ## Features
 
 - **Authentication**: Email/password authentication using Firebase Auth
-- **Diary Entries**: Add, view, edit, delete, and search entries with title, description, time, mood, and tags
+- **Diary Entries**: Add, view, and search entries with title, description, time, mood, and tags
 - **Timeline View**: Chronological display of entries for selected dates
 - **Calendar Navigation**: Browse entries by date with visual indicators
 - **Search & Filter**: Find entries by keywords, tags, or mood
 - **Export Functionality**: Export entries by day or month in JSON or TXT format
 - **Dark/Light Theme**: Toggle between light and dark themes with persistent preference
 - **Responsive Design**: Mobile-optimized with bottom navigation and desktop-optimized with sidebar
-- **Accessibility**: Keyboard navigation support and focus management
 
 ## Architecture
 
@@ -31,20 +30,17 @@ A responsive digital diary application built using HTML, CSS, and vanilla JavaSc
 
 ```
 /
-├── index.html                      # Main HTML file
+├── index.html            # Main HTML file
 ├── styles/
-│   └── main.css                    # All styles for the application
+│   └── main.css          # All styles for the application
 ├── scripts/
-│   ├── firebase-config.js          # Firebase initialization
-│   ├── auth.js                     # Authentication functionality
-│   ├── calendar.js                 # Calendar display and date selection
-│   ├── entries.js                  # Entry management (create, read, filter)
-│   ├── edit.js                     # Edit and delete entry functionality 
-│   ├── ui.js                       # UI interactions and responsive behavior
-│   └── app.js                      # Main application logic
-├── database-rules.json             # Firebase RTDB security rules
-├── FIREBASE_RULES_INSTRUCTIONS.md  # Instructions for deploying rules
-└── README.md                       # Project documentation
+│   ├── firebase-config.js # Firebase initialization
+│   ├── auth.js           # Authentication functionality
+│   ├── calendar.js       # Calendar display and date selection
+│   ├── entries.js        # Entry management (create, read, filter)
+│   ├── ui.js             # UI interactions and responsive behavior
+│   └── app.js            # Main application logic
+└── README.md             # Project documentation
 ```
 
 ## Installation

@@ -1,77 +1,106 @@
 {
   "rules": {
-    ".read": false,
-    ".write": false,
     "users": {
       "$uid": {
         ".read": "$uid === auth.uid",
         ".write": "$uid === auth.uid",
-        ".validate": "auth.uid === $uid",
-        "entries": {
-          ".indexOn": ["date", "mood", "tags"],
-          "$date": {
-            ".read": "$uid === auth.uid",
-            ".write": "$uid === auth.uid",
-            ".indexOn": [".key", "time", "mood"],
-            "$entryId": {
-              ".validate": "newData.hasChildren(['title', 'time'])",
-              "title": { 
-                ".validate": "newData.isString() && newData.val().length <= 200 && newData.val().length > 0" 
-              },
-              "description": { 
-                ".validate": "newData.isString() && newData.val().length <= 10000" 
-              },
-              "time": {
-                ".validate": "newData.isString() && newData.val().matches(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/)" 
-              },
-              "mood": { 
-                ".validate": "newData.isString() && newData.val().length <= 30" 
-              },
-              "tags": {
-                "$tag_index": { 
-                  ".validate": "newData.isString() && newData.val().length <= 50" 
-                },
-                ".validate": "newData.val() == null || (!newData.exists() || newData.val().length <= 10)"
-              },
-              "createdAt": {
-                ".validate": "newData.isString() || newData.isNumber()"
-              },
-              "updatedAt": {
-                ".validate": "newData.isString() || newData.isNumber()"
-              },
-              "$other": { ".validate": false }
-            }
-          }
-        },
+        
         "profile": {
           ".read": "$uid === auth.uid",
           ".write": "$uid === auth.uid",
-          "name": { ".validate": "newData.isString() && newData.val().length <= 100" },
-          "age": { ".validate": "newData.isString() || newData.val() === null" },
-          "hobby": { ".validate": "newData.isString() && newData.val().length <= 200 || newData.val() === null" },
-          "note": { ".validate": "newData.isString() && newData.val().length <= 500 || newData.val() === null" },
-          "email": { ".validate": "newData.isString() && newData.val().length <= 100" },
-          "created": { ".validate": "newData.isString()" },
-          "displayName": { ".validate": "newData.isString() && newData.val().length <= 100 || newData.val() === null" },
-          "theme": { ".validate": "newData.isString() && (newData.val() === 'light' || newData.val() === 'dark')" },
-          "preferences": { 
-            ".validate": "!newData.exists() || newData.hasChildren()",
-            "defaultView": { ".validate": "!newData.exists() || (newData.isString() && (newData.val() === 'calendar' || newData.val() === 'timeline' || newData.val() === 'list'))" },
-            "notificationEnabled": { ".validate": "!newData.exists() || newData.isBoolean()" },
-            "$other": { ".validate": "!newData.exists() || newData.isString() || newData.isBoolean() || newData.isNumber()" }
+          
+          "email": {
+            ".validate": "newData.isString() && newData.val().matches(/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$/)"
           },
-          "$other": { ".validate": false }
+          "creationDate": {
+            ".validate": "newData.isString() && newData.val().matches(/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$/)"
+          },
+          "lastActive": {
+            ".validate": "newData.isString() && newData.val().matches(/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$/)"
+          }
         },
+        
+        "entries": {
+          ".indexOn": [".key"],
+          
+          "$date": {
+            ".read": "$uid === auth.uid",
+            ".write": "$uid === auth.uid",
+            ".validate": "newData.parent().parent().parent().child('auth/uid').val() === $uid || $uid === auth.uid",
+            
+            "$time": {
+              ".validate": "newData.hasChildren(['title']) && $time.matches(/^([01]\\d|2[0-3]):([0-5]\\d)$/)",
+              
+              "title": {
+                ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100"
+              },
+              "description": {
+                ".validate": "newData.isString() || newData.val() === null"
+              },
+              "mood": {
+                ".validate": "newData.isString() || newData.val() === null"
+              },
+              "tags": {
+                ".validate": "newData.isArray() || newData.val() === null",
+                "$tagIndex": {
+                  ".validate": "newData.isString() && newData.val().startsWith('#') && newData.val().length <= 30"
+                }
+              },
+              "createdAt": {
+                ".validate": "newData.isString() && newData.val().matches(/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$/)"
+              },
+              "updatedAt": {
+                ".validate": "newData.isString() && newData.val().matches(/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$/)"
+              }
+            }
+          }
+        },
+        
+        "settings": {
+          ".read": "$uid === auth.uid",
+          ".write": "$uid === auth.uid",
+          
+          "theme": {
+            ".validate": "newData.isString() && (newData.val() === 'light' || newData.val() === 'dark')"
+          },
+          "defaultView": {
+            ".validate": "newData.isString() && (newData.val() === 'timeline' || newData.val() === 'calendar')"
+          },
+          "notifications": {
+            ".validate": "newData.isBoolean()"
+          }
+        },
+        
         "stats": {
           ".read": "$uid === auth.uid",
           ".write": "$uid === auth.uid",
-          "entryCount": { ".validate": "newData.isNumber() && newData.val() >= 0" },
-          "lastActive": { ".validate": "newData.isNumber()" },
-          "streakDays": { ".validate": "newData.isNumber() && newData.val() >= 0" },
-          "$other": { ".validate": false }
-        },
-        "$other": { ".validate": false }
+          
+          "totalEntries": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          },
+          "daysWithEntries": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          },
+          "mostCommonMood": {
+            ".validate": "newData.isString()"
+          },
+          "mostUsedTags": {
+            ".validate": "newData.isArray()",
+            "$tagIndex": {
+              ".validate": "newData.hasChildren(['tag', 'count'])",
+              "tag": {
+                ".validate": "newData.isString()"
+              },
+              "count": {
+                ".validate": "newData.isNumber() && newData.val() > 0"
+              }
+            }
+          }
+        }
       }
-    }
+    },
+    
+    ".read": false,
+    ".write": false
   }
 }

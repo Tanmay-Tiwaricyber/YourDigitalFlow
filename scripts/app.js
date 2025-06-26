@@ -3,9 +3,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize app when DOM is loaded
     console.log('Your Digital Flow app initialized');
     
-    // Initialize keyboard navigation for accessibility
-    setupKeyboardNavigation();
-    
     // Set the current date as the selected date initially
     const today = getCurrentDateString();
     updateDateDisplay(today);

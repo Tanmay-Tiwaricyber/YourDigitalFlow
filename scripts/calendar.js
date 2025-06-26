@@ -25,16 +25,31 @@ document.addEventListener('DOMContentLoaded', () => {
         navigateMonth(1);
     });
     
-    // Mobile calendar toggle
-    document.getElementById('mobile-calendar-toggle').addEventListener('click', () => {
-        const calendarContainer = document.getElementById('mobile-calendar-container');
-        calendarContainer.style.display = calendarContainer.style.display === 'none' ? 'block' : 'none';
-    });
+    // Mobile calendar toggle with animation
+    const mobileCalendarToggle = document.getElementById('mobile-calendar-toggle');
+    const mobileCalendarContainer = document.getElementById('mobile-calendar-container');
     
-    // Close mobile calendar with close button
-    document.getElementById('close-mobile-calendar').addEventListener('click', () => {
-        document.getElementById('mobile-calendar-container').style.display = 'none';
-    });
+    if (mobileCalendarToggle && mobileCalendarContainer) {
+        mobileCalendarToggle.addEventListener('click', () => {
+            if (mobileCalendarContainer.style.display === 'none') {
+                mobileCalendarContainer.style.display = 'block';
+                mobileCalendarContainer.style.opacity = '0';
+                mobileCalendarContainer.style.transform = 'translateY(-20px)';
+                
+                setTimeout(() => {
+                    mobileCalendarContainer.style.opacity = '1';
+                    mobileCalendarContainer.style.transform = 'translateY(0)';
+                }, 10);
+            } else {
+                mobileCalendarContainer.style.opacity = '0';
+                mobileCalendarContainer.style.transform = 'translateY(-20px)';
+                
+                setTimeout(() => {
+                    mobileCalendarContainer.style.display = 'none';
+                }, 300);
+            }
+        });
+    }
 });
 
 // Initialize desktop and mobile calendars
@@ -50,6 +65,21 @@ function navigateMonth(direction) {
     renderCalendar('calendar', currentDate);
     renderCalendar('mobile-calendar', currentDate);
     updateCalendarMonthDisplay();
+    
+    // If the selected date is in this month, keep it visible on calendar
+    // Otherwise, reset selection to the 1st day of the month
+    const selectedYear = selectedDate.getFullYear();
+    const selectedMonth = selectedDate.getMonth();
+    
+    if (selectedYear !== currentDate.getFullYear() || selectedMonth !== currentDate.getMonth()) {
+        // Selected date is not in the current month view, update calendar without changing date selection
+        renderCalendar('calendar', currentDate);
+        renderCalendar('mobile-calendar', currentDate);
+    } else {
+        // Re-render with the selected date highlighted
+        renderCalendar('calendar', currentDate);
+        renderCalendar('mobile-calendar', currentDate);
+    }
 }
 
 // Update month display on calendars
@@ -63,13 +93,23 @@ function updateCalendarMonthDisplay() {
     const year = currentDate.getFullYear();
     const monthDisplay = `${month} ${year}`;
     
-    document.getElementById('calendar-month').textContent = monthDisplay;
-    document.getElementById('mobile-calendar-month').textContent = monthDisplay;
+    const calendarMonthElements = [
+        document.getElementById('calendar-month'),
+        document.getElementById('mobile-calendar-month')
+    ];
+    
+    calendarMonthElements.forEach(element => {
+        if (element) {
+            element.textContent = monthDisplay;
+        }
+    });
 }
 
 // Render calendar for a specific month
 function renderCalendar(containerId, date) {
     const calendarContainer = document.getElementById(containerId);
+    if (!calendarContainer) return;
+    
     const year = date.getFullYear();
     const month = date.getMonth();
     
@@ -83,15 +123,15 @@ function renderCalendar(containerId, date) {
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     
     // Create calendar table
-    let calendarHTML = '<table>';
+    let calendarHTML = '<table role="grid">';
     
     // Add weekday headers
-    calendarHTML += '<tr>';
+    calendarHTML += '<thead><tr>';
     const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     weekdays.forEach(day => {
-        calendarHTML += `<th>${day}</th>`;
+        calendarHTML += `<th scope="col">${day}</th>`;
     });
-    calendarHTML += '</tr>';
+    calendarHTML += '</tr></thead><tbody>';
     
     // Add calendar days
     let day = 1;
@@ -107,7 +147,7 @@ function renderCalendar(containerId, date) {
         // Create days
         for (let j = 0; j < 7; j++) {
             if ((i === 0 && j < startingDay) || day > daysInMonth) {
-                calendarHTML += '<td></td>';
+                calendarHTML += '<td class="empty-day"></td>';
             } else {
                 // Check if this is today
                 const isToday = today.getDate() === day && 
@@ -132,7 +172,7 @@ function renderCalendar(containerId, date) {
                 const classAttr = classes.length > 0 ? ` class="${classes.join(' ')}"` : '';
                 
                 // Create clickable day with proper date attribute
-                calendarHTML += `<td${classAttr} data-date="${dateString}">${day}</td>`;
+                calendarHTML += `<td${classAttr} data-date="${dateString}" tabindex="0" role="button" aria-label="Select ${dateString}">${day}</td>`;
                 day++;
             }
         }
@@ -140,15 +180,25 @@ function renderCalendar(containerId, date) {
         calendarHTML += '</tr>';
     }
     
-    calendarHTML += '</table>';
+    calendarHTML += '</tbody></table>';
     calendarContainer.innerHTML = calendarHTML;
     
     // Add click event to calendar days
     const calendarDays = calendarContainer.querySelectorAll('td[data-date]');
     calendarDays.forEach(day => {
+        // Add click event
         day.addEventListener('click', () => {
             const dateString = day.getAttribute('data-date');
             selectDate(dateString);
+        });
+        
+        // Add keyboard accessibility
+        day.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                const dateString = day.getAttribute('data-date');
+                selectDate(dateString);
+            }
         });
     });
 }
@@ -166,13 +216,32 @@ function selectDate(dateString) {
     renderCalendar('calendar', currentDate);
     renderCalendar('mobile-calendar', currentDate);
     
-    // Hide mobile calendar after selection
-    document.getElementById('mobile-calendar-container').style.display = 'none';
+    // Hide mobile calendar after selection with animation
+    const mobileCalendarContainer = document.getElementById('mobile-calendar-container');
+    if (mobileCalendarContainer && mobileCalendarContainer.style.display !== 'none') {
+        mobileCalendarContainer.style.opacity = '0';
+        mobileCalendarContainer.style.transform = 'translateY(-20px)';
+        setTimeout(() => {
+            mobileCalendarContainer.style.display = 'none';
+        }, 300);
+    }
     
     // Load entries for selected date
     if (auth.currentUser) {
         loadEntries(auth.currentUser.uid, dateString);
     }
+    
+    // Reset filters
+    document.querySelectorAll('.mood-filter').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.querySelectorAll('.tag-filter').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Reset global filter variables
+    currentFilterMood = null;
+    currentFilterTags = [];
 }
 
 // Update date display in the header
@@ -188,42 +257,61 @@ function updateDateDisplay(dateString) {
         year: 'numeric'
     });
     
-    document.getElementById('mobile-date-display').textContent = formattedDate;
+    // Update all date displays
+    const dateDisplayElements = [
+        document.getElementById('mobile-date-display'),
+        document.getElementById('current-date-display')
+    ];
+    
+    dateDisplayElements.forEach(element => {
+        if (element) {
+            element.textContent = formattedDate;
+        }
+    });
 }
 
 // Mark calendar dates that have entries
 function markCalendarDatesWithEntries(userId) {
     calendarEntryDates = [];
     
-    // Get the current month
+    // Get the current month start and end dates
     const year = currentDate.getFullYear();
-    const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+    const month = currentDate.getMonth();
     
-    // Reference to entries for the current month
+    // Create date range for current month display
+    const startDate = new Date(year, month, 1);
+    const endDate = new Date(year, month + 1, 0);
+    
+    // Format as strings for comparison
+    const startString = formatDateString(startDate);
+    const endString = formatDateString(endDate);
+    
+    // Reference to entries
     const entriesRef = database.ref(`users/${userId}/entries`);
     
-    // Query entries for all dates in the month
-    entriesRef.once('value', (snapshot) => {
-        if (snapshot.exists()) {
-            // Get dates with entries
-            snapshot.forEach(dateSnapshot => {
-                calendarEntryDates.push(dateSnapshot.key);
-            });
-            
-            // Re-render calendars to mark dates with entries
-            renderCalendar('calendar', currentDate);
-            renderCalendar('mobile-calendar', currentDate);
-        }
-    }).catch(error => {
-        console.error('Error fetching entries for calendar:', error);
-    });
+    // Query entries within date range
+    entriesRef.orderByKey()
+        .startAt(startString)
+        .endAt(endString)
+        .once('value', (snapshot) => {
+            if (snapshot.exists()) {
+                // Get dates with entries
+                snapshot.forEach(dateSnapshot => {
+                    calendarEntryDates.push(dateSnapshot.key);
+                });
+                
+                // Re-render calendars to mark dates with entries
+                renderCalendar('calendar', currentDate);
+                renderCalendar('mobile-calendar', currentDate);
+            }
+        }).catch(error => {
+            console.error('Error fetching entries for calendar:', error);
+            showToast('Error loading calendar data', 'error');
+        });
 }
 
 // Get current date as a string (YYYY-MM-DD)
 function getCurrentDateString() {
     const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    return formatDateString(today);
 }
