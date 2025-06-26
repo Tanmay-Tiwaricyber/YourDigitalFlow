@@ -809,15 +809,16 @@ textarea::-webkit-scrollbar-thumb:hover {
     border-radius: 0.75rem;
     background-color: var(--card-color);
     color: var(--text-primary);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
     z-index: 1000;
     opacity: 0;
     transform: translateY(-20px);
-    animation: toast-in-out 3s ease-in-out forwards;
+    animation: toast-in-out 3.5s ease-in-out forwards;
     min-width: 250px;
     max-width: 320px;
     font-weight: 500;
     position: relative;
+    font-size: 1rem;
 }
 
 .toast::before {
@@ -861,8 +862,8 @@ textarea::-webkit-scrollbar-thumb:hover {
 
 @keyframes toast-in-out {
     0% { opacity: 0; transform: translateY(-20px); }
-    10% { opacity: 1; transform: translateY(0); }
-    90% { opacity: 1; transform: translateY(0); }
+    5% { opacity: 1; transform: translateY(0); }
+    95% { opacity: 1; transform: translateY(0); }
     100% { opacity: 0; transform: translateY(-20px); }
 }
 

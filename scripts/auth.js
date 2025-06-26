@@ -1,5 +1,7 @@
 // Authentication related functionality
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('Auth module loaded');
+    
     // DOM Elements
     const authContainer = document.getElementById('auth-container');
     const appContainer = document.getElementById('app-container');
@@ -10,8 +12,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginButton = document.getElementById('login-button');
     const signupButton = document.getElementById('signup-button');
     const logoutButton = document.getElementById('logout-button');
-    const profileLogoutButton = document.getElementById('logout-button');
     const profileEmail = document.getElementById('profile-email');
+    
+    // Check elements are loaded
+    console.log('Auth container found:', !!authContainer);
+    console.log('Login form found:', !!loginForm);
+    console.log('Login button found:', !!loginButton);
 
     // Toggle between login and signup forms
     showSignupLink.addEventListener('click', (e) => {
@@ -27,15 +33,26 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Login functionality
-    loginButton.addEventListener('click', () => {
+    loginForm.addEventListener('submit', (e) => {
+        // Prevent default form submission
+        e.preventDefault();
+        
+        console.log('Login form submitted');
         const email = document.getElementById('login-email').value;
         const password = document.getElementById('login-password').value;
         
         // Basic validation
         if (!email || !password) {
+            console.error('Validation error: Missing email or password');
             showToast('Please enter both email and password', 'error');
             return;
         }
+        
+        console.log('Attempting to sign in with Firebase');
+        
+        // Disable the login button to prevent multiple submissions
+        loginButton.disabled = true;
+        loginButton.textContent = 'Signing in...';
         
         // Sign in with Firebase
         auth.signInWithEmailAndPassword(email, password)
@@ -44,15 +61,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('login-email').value = '';
                 document.getElementById('login-password').value = '';
                 
+                console.log('Login successful', userCredential.user.uid);
                 showToast('Login successful!', 'success');
             })
             .catch((error) => {
+                console.error('Login error:', error.code, error.message);
                 showToast(`Login failed: ${error.message}`, 'error');
+            })
+            .finally(() => {
+                // Re-enable the login button
+                loginButton.disabled = false;
+                loginButton.textContent = 'Login';
             });
     });
 
     // Signup functionality
-    signupButton.addEventListener('click', () => {
+    signupForm.addEventListener('submit', (e) => {
+        // Prevent default form submission
+        e.preventDefault();
+        
+        console.log('Signup form submitted');
         const email = document.getElementById('signup-email').value;
         const password = document.getElementById('signup-password').value;
         const confirmPassword = document.getElementById('signup-confirm-password').value;
@@ -68,6 +96,10 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
+        // Disable the signup button to prevent multiple submissions
+        signupButton.disabled = true;
+        signupButton.textContent = 'Creating account...';
+        
         // Create user with Firebase
         auth.createUserWithEmailAndPassword(email, password)
             .then((userCredential) => {
@@ -76,10 +108,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('signup-password').value = '';
                 document.getElementById('signup-confirm-password').value = '';
                 
+                console.log('Account created successfully', userCredential.user.uid);
                 showToast('Account created successfully!', 'success');
             })
             .catch((error) => {
+                console.error('Signup error:', error.code, error.message);
                 showToast(`Signup failed: ${error.message}`, 'error');
+            })
+            .finally(() => {
+                // Re-enable the signup button
+                signupButton.disabled = false;
+                signupButton.textContent = 'Sign Up';
             });
     });
 
@@ -132,6 +171,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Helper function to show toast notifications
 function showToast(message, type = 'success') {
+    console.log(`Toast: ${type} - ${message}`);
+    
     // Create toast element
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
@@ -140,8 +181,15 @@ function showToast(message, type = 'success') {
     // Add to document
     document.body.appendChild(toast);
     
+    // Force reflow to ensure animation works
+    void toast.offsetWidth;
+    
     // Remove after animation completes
     setTimeout(() => {
-        document.body.removeChild(toast);
+        try {
+            document.body.removeChild(toast);
+        } catch (error) {
+            console.error('Error removing toast:', error);
+        }
     }, 3000);
 }
