@@ -27,11 +27,11 @@
               "mood": { 
                 ".validate": "newData.isString() && newData.val().length <= 30" 
               },
-              "tags": { 
-                ".validate": "newData.isArray() && newData.val().length <= 10",
-                "$tag": { 
+              "tags": {
+                "$tag_index": { 
                   ".validate": "newData.isString() && newData.val().length <= 50" 
-                }
+                },
+                ".validate": "newData.val() == null || (!newData.exists() || newData.val().length <= 10)"
               },
               "createdAt": {
                 ".validate": "newData.isString() || newData.isNumber()"
@@ -55,10 +55,10 @@
           "displayName": { ".validate": "newData.isString() && newData.val().length <= 100 || newData.val() === null" },
           "theme": { ".validate": "newData.isString() && (newData.val() === 'light' || newData.val() === 'dark')" },
           "preferences": { 
-            ".validate": "newData.isObject() || newData.val() === null",
-            "defaultView": { ".validate": "newData.isString() && (newData.val() === 'calendar' || newData.val() === 'timeline' || newData.val() === 'list')" },
-            "notificationEnabled": { ".validate": "newData.isBoolean()" },
-            "$other": { ".validate": "newData.isString() || newData.isBoolean() || newData.isNumber()" }
+            ".validate": "!newData.exists() || newData.hasChildren()",
+            "defaultView": { ".validate": "!newData.exists() || (newData.isString() && (newData.val() === 'calendar' || newData.val() === 'timeline' || newData.val() === 'list'))" },
+            "notificationEnabled": { ".validate": "!newData.exists() || newData.isBoolean()" },
+            "$other": { ".validate": "!newData.exists() || newData.isString() || newData.isBoolean() || newData.isNumber()" }
           },
           "$other": { ".validate": false }
         },
