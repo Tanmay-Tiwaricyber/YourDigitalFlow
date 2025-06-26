@@ -67,3 +67,48 @@ function checkFirebaseStatus() {
     }
     console.log('-------------------------');
 }
+
+// Dynamically load a script
+function loadScript(src, callback) {
+    console.log(`Loading script: ${src}`);
+    
+    // Check if script is already loaded
+    const existingScript = document.querySelector(`script[src="${src}"]`);
+    if (existingScript) {
+        console.log(`Script ${src} already loaded`);
+        if (callback) callback();
+        return;
+    }
+    
+    // Create script element
+    const script = document.createElement('script');
+    script.src = src;
+    script.async = true;
+    
+    // Set up callback
+    if (callback) {
+        script.onload = callback;
+        script.onerror = (error) => {
+            console.error(`Error loading script ${src}:`, error);
+            // Try to continue anyway
+            callback();
+        };
+    }
+    
+    // Add to document
+    document.head.appendChild(script);
+    console.log(`Script ${src} added to document`);
+}
+
+// Check if a Firebase operation should be retried based on error code
+function shouldRetryFirebaseOperation(error) {
+    const retryableCodes = [
+        'auth/network-request-failed',
+        'auth/timeout',
+        'auth/internal-error',
+        'NETWORK_ERROR',
+        'TIMEOUT'
+    ];
+    
+    return retryableCodes.includes(error.code);
+}

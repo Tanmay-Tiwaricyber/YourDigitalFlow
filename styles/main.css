@@ -800,64 +800,91 @@ textarea::-webkit-scrollbar-thumb:hover {
 }
 
 /* Toast/Notification Styles */
-.toast {
+.toast-container {
     position: fixed;
-    top: 1rem;
-    right: 1rem;
-    padding: 0.75rem 1.5rem;
-    padding-left: 3rem;
-    border-radius: 0.75rem;
-    background-color: var(--card-color);
-    color: var(--text-primary);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
-    z-index: 1000;
-    opacity: 0;
-    transform: translateY(-20px);
-    animation: toast-in-out 3.5s ease-in-out forwards;
-    min-width: 250px;
-    max-width: 320px;
-    font-weight: 500;
-    position: relative;
-    font-size: 1rem;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 350px;
+    pointer-events: none; /* Container allows clicks through */
 }
 
-.toast::before {
-    font-family: 'Material Icons';
-    position: absolute;
-    left: 1rem;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 1.25rem;
+/* But the toast itself should receive clicks */
+.toast {
+    pointer-events: auto;
+}
+
+.toast {
+    position: relative;
+    padding: 15px;
+    border-radius: 8px;
+    background-color: var(--card-color);
+    color: var(--text-primary);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    margin-bottom: 10px;
+    opacity: 0;
+    transform: translateY(-20px);
+    min-width: 280px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    transition: transform 0.3s ease, opacity 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+    will-change: transform, opacity;
+    font-weight: 500;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateY(0);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+}
+
+.toast:hover {
+    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+}
+
+.toast-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+}
+
+.toast-close {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 4px;
+    margin-left: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.toast-close:hover {
+    background-color: rgba(0,0,0,0.05);
 }
 
 .toast.success {
     border-left: 4px solid var(--success-color);
-    background-color: rgba(76, 175, 80, 0.05);
-}
-
-.toast.success::before {
-    content: 'check_circle';
-    color: var(--success-color);
 }
 
 .toast.error {
     border-left: 4px solid var(--error-color);
-    background-color: rgba(244, 67, 54, 0.05);
-}
-
-.toast.error::before {
-    content: 'error';
-    color: var(--error-color);
 }
 
 .toast.warning {
     border-left: 4px solid var(--warning-color);
-    background-color: rgba(255, 152, 0, 0.05);
 }
 
-.toast.warning::before {
-    content: 'warning';
-    color: var(--warning-color);
+.toast.info {
+    border-left: 4px solid #3498db;
 }
 
 @keyframes toast-in-out {
@@ -998,4 +1025,44 @@ textarea::-webkit-scrollbar-thumb:hover {
 /* Helper Classes */
 .text-muted {
     color: var(--text-muted);
+}
+
+/* Authentication Transitions */
+.fade-in {
+    opacity: 0;
+    animation: fadeIn 0.5s ease forwards;
+    will-change: opacity, transform;
+}
+
+.fade-out {
+    opacity: 1;
+    animation: fadeOut 0.5s ease forwards;
+    will-change: opacity, transform;
+}
+
+@keyframes fadeIn {
+    from { 
+        opacity: 0; 
+        transform: translateY(10px);
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeOut {
+    from { 
+        opacity: 1; 
+        transform: translateY(0);
+    }
+    to { 
+        opacity: 0; 
+        transform: translateY(-10px);
+    }
+}
+
+/* Add transition properties to containers for smoother state changes */
+.auth-container, .app-container {
+    transition: opacity 0.3s ease, transform 0.3s ease;
 }
