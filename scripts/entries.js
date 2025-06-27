@@ -136,28 +136,71 @@ function loadEntries(userId, dateString) {
     updateTagFilters(userId);
 }
 
-// Create an entry card element
+// Create an entry card
 function createEntryCard(entry) {
-    const entryCard = document.createElement('div');
-    entryCard.className = 'entry-card';
+    const card = document.createElement('div');
+    card.className = 'entry-card card';
+    card.setAttribute('data-entry-time', entry.time);
     
-    // Format the time (convert 24h to 12h format)
+    // Calculate mood color to add as an accent
+    let moodColor = '#4a6fa5'; // Default color
+    if (entry.mood) {
+        const moodMap = {
+            '😊 Happy': '#4caf50',
+            '😢 Sad': '#2196f3',
+            '😠 Angry': '#f44336',
+            '😴 Tired': '#ff9800',
+            '😌 Relaxed': '#9c27b0'
+        };
+        moodColor = moodMap[entry.mood] || moodColor;
+    }
+    
+    // Set card accent color
+    card.style.setProperty('--accent-color', moodColor);
+    card.style.borderLeft = `4px solid ${moodColor}`;
+    
+    // Format time
     const timeFormatted = formatTime(entry.time);
     
-    // Create HTML for entry card
-    entryCard.innerHTML = `
-        <div class="entry-header">
-            <h3 class="entry-title">${entry.title || 'Untitled Entry'}</h3>
-            <span class="entry-time">${timeFormatted}</span>
+    // Create card HTML
+    card.innerHTML = `
+        <div class="card-title">
+            <span>${entry.title}</span>
+            <div class="entry-mood" title="${entry.mood || 'No mood selected'}">${entry.mood?.split(' ')[0] || ''}</div>
         </div>
-        <p class="entry-description">${entry.description || ''}</p>
-        <div class="entry-mood">${entry.mood || ''}</div>
-        <div class="entry-tags">
-            ${entry.tags ? entry.tags.map(tag => `<span class="entry-tag">${tag}</span>`).join('') : ''}
+        <div class="card-content">${entry.description}</div>
+        <div class="card-meta">
+            <span class="entry-time"><i class="material-icons icon-small">schedule</i> ${timeFormatted}</span>
+            <div class="entry-actions">
+                <button class="icon-btn edit-entry" title="Edit entry"><i class="material-icons">edit</i></button>
+                <button class="icon-btn delete-entry" title="Delete entry"><i class="material-icons">delete</i></button>
+            </div>
+        </div>
+        <div class="card-tags">
+            ${entry.tags ? entry.tags.map(tag => `<span class="tag">${tag}</span>`).join('') : ''}
         </div>
     `;
     
-    return entryCard;
+    // Add edit functionality
+    const editBtn = card.querySelector('.edit-entry');
+    editBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        editEntry(entry);
+    });
+    
+    // Add delete functionality
+    const deleteBtn = card.querySelector('.delete-entry');
+    deleteBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        deleteEntry(entry);
+    });
+    
+    // Add click functionality to view full entry
+    card.addEventListener('click', () => {
+        viewEntryDetails(entry);
+    });
+    
+    return card;
 }
 
 // Save a new entry (from either mobile panel or desktop modal)
@@ -278,23 +321,168 @@ function setupMoodSelectors(source) {
 }
 
 // Format time from 24h to 12h format
-function formatTime(time24) {
-    const [hours, minutes] = time24.split(':');
-    let period = 'AM';
-    let hours12 = parseInt(hours, 10);
+function formatTime(timeString) {
+    try {
+        const [hours, minutes] = timeString.split(':');
+        const hour = parseInt(hours, 10);
+        const ampm = hour >= 12 ? 'PM' : 'AM';
+        const hour12 = hour % 12 || 12;
+        return `${hour12}:${minutes} ${ampm}`;
+    } catch (error) {
+        return timeString;
+    }
+}
+
+// View entry details in a modal
+function viewEntryDetails(entry) {
+    // Create modal if it doesn't exist
+    let detailModal = document.getElementById('entry-detail-modal');
+    if (!detailModal) {
+        detailModal = document.createElement('div');
+        detailModal.id = 'entry-detail-modal';
+        detailModal.className = 'entry-modal';
+        document.body.appendChild(detailModal);
+    }
     
-    if (hours12 >= 12) {
-        period = 'PM';
-        if (hours12 > 12) {
-            hours12 -= 12;
+    // Format time
+    const timeFormatted = formatTime(entry.time);
+    
+    // Create modal content
+    detailModal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>${entry.title}</h3>
+                <button class="close-btn" id="close-detail-modal">
+                    <i class="material-icons">close</i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="entry-detail-meta">
+                    <span class="entry-time"><i class="material-icons icon-small">schedule</i> ${timeFormatted}</span>
+                    <span class="entry-mood">${entry.mood || 'No mood'}</span>
+                </div>
+                <div class="entry-detail-content">
+                    <p>${entry.description.replace(/\n/g, '<br>')}</p>
+                </div>
+                <div class="entry-detail-tags">
+                    ${entry.tags ? entry.tags.map(tag => `<span class="tag">${tag}</span>`).join('') : ''}
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline edit-detail-entry">
+                    <i class="material-icons">edit</i> Edit
+                </button>
+                <button class="btn btn-primary close-detail-btn">Close</button>
+            </div>
+        </div>
+    `;
+    
+    // Show modal with animation
+    detailModal.classList.add('active');
+    
+    // Add event listeners
+    document.getElementById('close-detail-modal').addEventListener('click', () => {
+        detailModal.classList.remove('active');
+    });
+    
+    document.querySelector('.close-detail-btn').addEventListener('click', () => {
+        detailModal.classList.remove('active');
+    });
+    
+    document.querySelector('.edit-detail-entry').addEventListener('click', () => {
+        detailModal.classList.remove('active');
+        editEntry(entry);
+    });
+    
+    // Close modal when clicking outside
+    detailModal.addEventListener('click', (event) => {
+        if (event.target === detailModal) {
+            detailModal.classList.remove('active');
         }
-    }
+    });
+}
+
+// Edit entry
+function editEntry(entry) {
+    const isDesktop = window.innerWidth >= 768;
     
-    if (hours12 === 0) {
-        hours12 = 12;
+    if (isDesktop) {
+        // Use modal for desktop
+        const modal = document.getElementById('entry-modal');
+        
+        // Fill in form fields
+        document.getElementById('modal-entry-title').value = entry.title;
+        document.getElementById('modal-entry-description').value = entry.description;
+        document.getElementById('modal-entry-time').value = entry.time;
+        
+        // Set mood
+        const moodBtns = modal.querySelectorAll('.mood-btn');
+        moodBtns.forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.getAttribute('data-mood') === entry.mood) {
+                btn.classList.add('active');
+            }
+        });
+        
+        // Set tags
+        document.getElementById('modal-entry-tags').value = entry.tags ? entry.tags.join(', ') : '';
+        
+        // Update save button
+        const saveBtn = document.getElementById('modal-save-entry');
+        saveBtn.setAttribute('data-edit-mode', 'true');
+        saveBtn.setAttribute('data-date', entry.date);
+        saveBtn.setAttribute('data-time', entry.time);
+        
+        // Show modal with animation
+        modal.classList.add('active');
+        
+        // Animate form elements
+        setTimeout(() => {
+            const modalElements = modal.querySelectorAll('.animate-item');
+            modalElements.forEach((element, index) => {
+                element.style.setProperty('--item-index', index);
+                element.classList.add('slide-in');
+            });
+        }, 100);
+    } else {
+        // Use panel for mobile
+        const panel = document.getElementById('entry-panel');
+        
+        // Fill in form fields
+        document.getElementById('entry-title').value = entry.title;
+        document.getElementById('entry-description').value = entry.description;
+        document.getElementById('entry-time').value = entry.time;
+        
+        // Set mood
+        const moodBtns = panel.querySelectorAll('.mood-btn');
+        moodBtns.forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.getAttribute('data-mood') === entry.mood) {
+                btn.classList.add('active');
+            }
+        });
+        
+        // Set tags
+        document.getElementById('entry-tags').value = entry.tags ? entry.tags.join(', ') : '';
+        
+        // Update save button
+        const saveBtn = document.getElementById('save-entry');
+        saveBtn.setAttribute('data-edit-mode', 'true');
+        saveBtn.setAttribute('data-date', entry.date);
+        saveBtn.setAttribute('data-time', entry.time);
+        
+        // Show panel
+        panel.classList.add('active');
+        
+        // Animate form elements
+        setTimeout(() => {
+            const formElements = panel.querySelectorAll('.animate-item');
+            formElements.forEach((element, index) => {
+                element.style.setProperty('--item-index', index);
+                element.classList.add('slide-in');
+            });
+        }, 100);
     }
-    
-    return `${hours12}:${minutes} ${period}`;
 }
 
 // Setup filter functionality

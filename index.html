@@ -7,41 +7,89 @@
     <link rel="stylesheet" href="styles/main.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <meta name="theme-color" content="#4a6fa5">
 </head>
 <body class="light-theme">
     <!-- Authentication Container -->
     <div id="auth-container" class="auth-container">
         <div class="auth-card">
-            <h1>Your Digital Flow</h1>
-            <p class="subtitle">Your personal digital diary</p>
+            <div class="auth-header animate-item">
+                <h1>Your Digital Flow</h1>
+                <p class="subtitle">Your personal digital diary</p>
+            </div>
             
             <!-- Login Form -->
             <div id="login-form">
-                <h2>Login</h2>
-                <div class="input-group">
-                    <input type="email" id="login-email" placeholder="Email" required>
+                <h2 class="animate-item">Login</h2>
+                <div class="input-group float-label animate-item">
+                    <input type="email" id="login-email" placeholder=" " required>
+                    <label for="login-email">Email</label>
                 </div>
-                <div class="input-group">
-                    <input type="password" id="login-password" placeholder="Password" required>
+                <div class="input-group float-label animate-item">
+                    <input type="password" id="login-password" placeholder=" " required>
+                    <label for="login-password">Password</label>
+                    <span class="input-icon toggle-password">
+                        <i class="material-icons">visibility_off</i>
+                    </span>
                 </div>
-                <button id="login-button" class="btn btn-primary">Login</button>
-                <p class="form-switch">Don't have an account? <a href="#" id="show-signup">Sign up</a></p>
+                <button id="login-button" class="btn btn-primary animate-item">Login</button>
+                
+                <div class="divider animate-item">Or login with</div>
+                
+                <div class="social-login animate-item">
+                    <a href="#" class="social-btn google-btn">
+                        <i class="fab fa-google"></i>
+                    </a>
+                    <a href="#" class="social-btn facebook-btn">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="#" class="social-btn twitter-btn">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                </div>
+                
+                <p class="form-switch animate-item">Don't have an account? <a href="#" id="show-signup">Sign up</a></p>
             </div>
             
             <!-- Signup Form -->
             <div id="signup-form" style="display: none;">
-                <h2>Sign Up</h2>
-                <div class="input-group">
-                    <input type="email" id="signup-email" placeholder="Email" required>
+                <h2 class="animate-item">Sign Up</h2>
+                <div class="input-group float-label animate-item">
+                    <input type="email" id="signup-email" placeholder=" " required>
+                    <label for="signup-email">Email</label>
                 </div>
-                <div class="input-group">
-                    <input type="password" id="signup-password" placeholder="Password" required>
+                <div class="input-group float-label animate-item">
+                    <input type="password" id="signup-password" placeholder=" " required>
+                    <label for="signup-password">Password</label>
+                    <span class="input-icon toggle-password">
+                        <i class="material-icons">visibility_off</i>
+                    </span>
                 </div>
-                <div class="input-group">
-                    <input type="password" id="signup-confirm-password" placeholder="Confirm Password" required>
+                <div class="input-group float-label animate-item">
+                    <input type="password" id="signup-confirm-password" placeholder=" " required>
+                    <label for="signup-confirm-password">Confirm Password</label>
+                    <span class="input-icon toggle-password">
+                        <i class="material-icons">visibility_off</i>
+                    </span>
                 </div>
-                <button id="signup-button" class="btn btn-primary">Sign Up</button>
-                <p class="form-switch">Already have an account? <a href="#" id="show-login">Login</a></p>
+                <button id="signup-button" class="btn btn-primary animate-item">Sign Up</button>
+                
+                <div class="divider animate-item">Or sign up with</div>
+                
+                <div class="social-login animate-item">
+                    <a href="#" class="social-btn google-btn">
+                        <i class="fab fa-google"></i>
+                    </a>
+                    <a href="#" class="social-btn facebook-btn">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="#" class="social-btn twitter-btn">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                </div>
+                
+                <p class="form-switch animate-item">Already have an account? <a href="#" id="show-login">Login</a></p>
             </div>
         </div>
     </div>
@@ -56,25 +104,30 @@
             
             <div class="calendar-container">
                 <div class="calendar-header">
-                    <button id="prev-month"><i class="material-icons">chevron_left</i></button>
+                    <button id="prev-month" data-tooltip="Previous month"><i class="material-icons">chevron_left</i></button>
                     <h3 id="calendar-month">June 2025</h3>
-                    <button id="next-month"><i class="material-icons">chevron_right</i></button>
+                    <button id="next-month" data-tooltip="Next month"><i class="material-icons">chevron_right</i></button>
                 </div>
                 <div class="calendar" id="calendar"></div>
             </div>
             
             <div class="sidebar-search">
-                <input type="text" id="desktop-search" placeholder="Search entries...">
+                <div class="input-group with-icon">
+                    <input type="text" id="desktop-search" placeholder="Search entries...">
+                    <span class="input-icon">
+                        <i class="material-icons">search</i>
+                    </span>
+                </div>
             </div>
             
             <div class="filter-section">
                 <h4>Filter by Mood</h4>
                 <div class="mood-filters">
-                    <button class="mood-filter" data-mood="😊 Happy">😊</button>
-                    <button class="mood-filter" data-mood="😢 Sad">😢</button>
-                    <button class="mood-filter" data-mood="😠 Angry">😠</button>
-                    <button class="mood-filter" data-mood="😴 Tired">😴</button>
-                    <button class="mood-filter" data-mood="😌 Relaxed">😌</button>
+                    <button class="mood-filter" data-mood="😊 Happy" data-tooltip="Happy">😊</button>
+                    <button class="mood-filter" data-mood="😢 Sad" data-tooltip="Sad">😢</button>
+                    <button class="mood-filter" data-mood="😠 Angry" data-tooltip="Angry">😠</button>
+                    <button class="mood-filter" data-mood="😴 Tired" data-tooltip="Tired">😴</button>
+                    <button class="mood-filter" data-mood="😌 Relaxed" data-tooltip="Relaxed">😌</button>
                 </div>
                 
                 <h4>Filter by Tags</h4>
@@ -85,234 +138,265 @@
             
             <div class="export-section">
                 <h4>Export Entries</h4>
-                <button id="export-day" class="btn btn-outline">Export Day</button>
-                <button id="export-month" class="btn btn-outline">Export Month</button>
+                <button id="export-day" class="btn btn-outline" data-tooltip="Export current day's entries">Export Day</button>
+                <button id="export-month" class="btn btn-outline" data-tooltip="Export current month's entries">Export Month</button>
                 <div class="export-format">
-                    <label>
-                        <input type="radio" name="export-format" value="json" checked> JSON
+                    <label class="custom-radio">
+                        <input type="radio" name="export-format" value="json" checked>
+                        <span class="checkmark"></span>
+                        JSON
                     </label>
-                    <label>
-                        <input type="radio" name="export-format" value="txt"> TXT
+                    <label class="custom-radio">
+                        <input type="radio" name="export-format" value="txt">
+                        <span class="checkmark"></span>
+                        TXT
                     </label>
                 </div>
             </div>
             
             <div class="theme-toggle">
-                <span class="material-icons">light_mode</span>
                 <label class="switch">
+                    <span>Dark Mode</span>
                     <input type="checkbox" id="theme-toggle">
                     <span class="slider round"></span>
                 </label>
-                <span class="material-icons">dark_mode</span>
             </div>
         </div>
         
-        <!-- Main Content Area -->
+        <!-- Main content -->
         <div class="main-content">
-            <div class="mobile-header">
-                <h2 id="mobile-date-display">June 26, 2025</h2>
-                <button id="mobile-calendar-toggle" class="btn-icon">
-                    <i class="material-icons">calendar_today</i>
-                </button>
-            </div>
-            
-            <div id="mobile-calendar-container" class="mobile-calendar-container" style="display: none;">
-                <div class="calendar-header">
-                    <button id="mobile-prev-month"><i class="material-icons">chevron_left</i></button>
-                    <h3 id="mobile-calendar-month">June 2025</h3>
-                    <button id="mobile-next-month"><i class="material-icons">chevron_right</i></button>
-                </div>
-                <div class="calendar" id="mobile-calendar"></div>
-            </div>
-            
-            <div class="entries-container" id="entries-container">
-                <!-- Entries will be populated here -->
-                <div class="empty-state" id="empty-state">
-                    <div class="empty-state-icon">
-                        <i class="material-icons">book</i>
+            <div class="app-header">
+                <div class="header-content">
+                    <div class="app-title">
+                        <img src="assets/img/logo.png" alt="Your Digital Flow Logo" class="app-logo">
+                        <h1>Your Digital Flow</h1>
                     </div>
+                    <div class="desktop-nav">
+                        <a class="desktop-nav-item active">Timeline</a>
+                        <a class="desktop-nav-item">Analytics</a>
+                        <a class="desktop-nav-item">Profile</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Date display -->
+            <div class="date-display">
+                <div class="current-date" id="current-date">June 27, 2025</div>
+                <div class="date-navigation">
+                    <button id="prev-day" data-tooltip="Previous day"><i class="material-icons">chevron_left</i></button>
+                    <button id="today">Today</button>
+                    <button id="next-day" data-tooltip="Next day"><i class="material-icons">chevron_right</i></button>
+                </div>
+            </div>
+            
+            <!-- Entries container -->
+            <div class="entries-section">
+                <div id="entries-container" class="entries-container">
+                    <!-- Entries will be loaded here -->
+                </div>
+                
+                <div id="empty-state" class="empty-state" style="display: none;">
+                    <img src="assets/img/empty-state.svg" alt="No entries" class="empty-state-img">
                     <h3>No entries for this day</h3>
-                    <p>Add your first diary entry by clicking the + button below</p>
+                    <p>Add your first entry to start tracking your day.</p>
+                    <button class="btn btn-primary" id="empty-state-add-btn">
+                        <i class="material-icons">add</i> Add Entry
+                    </button>
                 </div>
             </div>
             
-            <!-- Desktop Add Entry Button -->
-            <button id="desktop-add-entry" class="floating-btn">
+            <!-- Floating add button for desktop -->
+            <div class="desktop-add-btn" id="desktop-add-entry" data-tooltip="Add new entry">
                 <i class="material-icons">add</i>
-            </button>
-        </div>
-        
-        <!-- Mobile Bottom Navigation -->
-        <div class="mobile-nav">
-            <button class="nav-item active" data-view="timeline">
-                <i class="material-icons">view_timeline</i>
-                <span>Timeline</span>
-            </button>
-            <button class="nav-item" data-view="add-entry">
-                <i class="material-icons">add_circle</i>
-                <span>Add Entry</span>
-            </button>
-            <button class="nav-item" data-view="profile">
-                <i class="material-icons">account_circle</i>
-                <span>Profile</span>
-            </button>
-        </div>
-        
-        <!-- Mobile Add Entry Panel -->
-        <div class="entry-panel" id="entry-panel">
-            <div class="entry-panel-header">
-                <h3>Add New Entry</h3>
-                <button class="btn-icon" id="close-entry-panel">
-                    <i class="material-icons">close</i>
-                </button>
-            </div>
-            <div class="entry-form">
-                <div class="form-group">
-                    <label for="entry-title">Title</label>
-                    <input type="text" id="entry-title" placeholder="Title your moment">
-                </div>
-                <div class="form-group">
-                    <label for="entry-description">Description</label>
-                    <textarea id="entry-description" placeholder="Describe your moment..."></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="entry-time">Time</label>
-                    <input type="time" id="entry-time">
-                </div>
-                <div class="form-group">
-                    <label>Mood</label>
-                    <div class="mood-selector">
-                        <button class="mood-btn" data-mood="😊 Happy">😊</button>
-                        <button class="mood-btn" data-mood="😢 Sad">😢</button>
-                        <button class="mood-btn" data-mood="😠 Angry">😠</button>
-                        <button class="mood-btn" data-mood="😴 Tired">😴</button>
-                        <button class="mood-btn" data-mood="😌 Relaxed">😌</button>
-                    </div>
-                    <input type="hidden" id="selected-mood">
-                </div>
-                <div class="form-group">
-                    <label for="entry-tags">Tags</label>
-                    <input type="text" id="entry-tags" placeholder="Add tags separated by spaces (e.g., #work #happy)">
-                </div>
-                <button id="save-entry" class="btn btn-primary">Save Entry</button>
             </div>
         </div>
         
-        <!-- Desktop Entry Modal -->
-        <div class="modal" id="entry-modal">
+        <!-- Entry modal (for desktop) -->
+        <div id="entry-modal" class="entry-modal">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h3>Add New Entry</h3>
-                    <button class="btn-icon" id="close-modal">
+                    <h3 class="animate-item">New Entry</h3>
+                    <button id="close-modal" class="close-btn">
                         <i class="material-icons">close</i>
                     </button>
                 </div>
-                <div class="entry-form">
-                    <div class="form-group">
+                
+                <div class="modal-body">
+                    <div class="input-group float-label animate-item">
+                        <input type="text" id="modal-entry-title" placeholder=" " maxlength="100">
                         <label for="modal-entry-title">Title</label>
-                        <input type="text" id="modal-entry-title" placeholder="Title your moment">
                     </div>
-                    <div class="form-group">
+                    
+                    <div class="input-group float-label animate-item">
+                        <textarea id="modal-entry-description" placeholder=" " maxlength="10000"></textarea>
                         <label for="modal-entry-description">Description</label>
-                        <textarea id="modal-entry-description" placeholder="Describe your moment..."></textarea>
                     </div>
-                    <div class="form-group">
-                        <label for="modal-entry-time">Time</label>
-                        <input type="time" id="modal-entry-time">
+                    
+                    <div class="form-row animate-item">
+                        <div class="input-group float-label time-input">
+                            <input type="time" id="modal-entry-time">
+                            <label for="modal-entry-time">Time</label>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label>Mood</label>
+                            <div class="mood-selector modal-mood-selector">
+                                <button class="mood-btn" data-mood="😊 Happy">😊</button>
+                                <button class="mood-btn" data-mood="😢 Sad">😢</button>
+                                <button class="mood-btn" data-mood="😠 Angry">😠</button>
+                                <button class="mood-btn" data-mood="😴 Tired">😴</button>
+                                <button class="mood-btn" data-mood="😌 Relaxed">😌</button>
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-group">
+                    
+                    <div class="input-group float-label animate-item">
+                        <input type="text" id="modal-entry-tags" placeholder=" ">
+                        <label for="modal-entry-tags">Tags (comma separated)</label>
+                    </div>
+                </div>
+                
+                <div class="modal-footer animate-item">
+                    <button class="btn btn-outline" id="modal-cancel-entry">Cancel</button>
+                    <button class="btn btn-primary" id="modal-save-entry">Save Entry</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Entry panel (for mobile) -->
+        <div id="entry-panel" class="entry-panel">
+            <div class="panel-header">
+                <h3 class="animate-item">New Entry</h3>
+                <button id="close-entry-panel" class="close-btn">
+                    <i class="material-icons">close</i>
+                </button>
+            </div>
+            
+            <div class="panel-body">
+                <div class="input-group float-label animate-item">
+                    <input type="text" id="entry-title" placeholder=" " maxlength="100">
+                    <label for="entry-title">Title</label>
+                </div>
+                
+                <div class="input-group float-label animate-item">
+                    <textarea id="entry-description" placeholder=" " maxlength="10000"></textarea>
+                    <label for="entry-description">Description</label>
+                </div>
+                
+                <div class="form-row animate-item">
+                    <div class="input-group float-label time-input">
+                        <input type="time" id="entry-time">
+                        <label for="entry-time">Time</label>
+                    </div>
+                    
+                    <div class="input-group">
                         <label>Mood</label>
-                        <div class="mood-selector">
+                        <div class="mood-selector panel-mood-selector">
                             <button class="mood-btn" data-mood="😊 Happy">😊</button>
                             <button class="mood-btn" data-mood="😢 Sad">😢</button>
                             <button class="mood-btn" data-mood="😠 Angry">😠</button>
                             <button class="mood-btn" data-mood="😴 Tired">😴</button>
                             <button class="mood-btn" data-mood="😌 Relaxed">😌</button>
                         </div>
-                        <input type="hidden" id="modal-selected-mood">
                     </div>
-                    <div class="form-group">
-                        <label for="modal-entry-tags">Tags</label>
-                        <input type="text" id="modal-entry-tags" placeholder="Add tags separated by spaces (e.g., #work #happy)">
+                </div>
+                
+                <div class="input-group float-label animate-item">
+                    <input type="text" id="entry-tags" placeholder=" ">
+                    <label for="entry-tags">Tags (comma separated)</label>
+                </div>
+            </div>
+            
+            <div class="panel-footer animate-item">
+                <button class="btn btn-primary" id="save-entry">Save Entry</button>
+            </div>
+        </div>
+        
+        <!-- Profile view -->
+        <div id="profile-view" class="profile-view" style="display: none;">
+            <div class="profile-header">
+                <h2>Your Profile</h2>
+            </div>
+            
+            <div class="profile-card">
+                <div class="profile-info">
+                    <div class="profile-avatar">
+                        <span class="material-icons">account_circle</span>
                     </div>
-                    <button id="modal-save-entry" class="btn btn-primary">Save Entry</button>
+                    <div class="profile-details">
+                        <h3>Email</h3>
+                        <p id="profile-email">user@example.com</p>
+                    </div>
+                </div>
+                
+                <div class="profile-settings">
+                    <h3>Settings</h3>
+                    
+                    <div class="setting-item">
+                        <div class="setting-label">Dark Mode</div>
+                        <label class="switch">
+                            <input type="checkbox" id="profile-theme-toggle">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <div class="setting-label">Notifications</div>
+                        <label class="switch">
+                            <input type="checkbox" id="notifications-toggle">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="profile-actions">
+                    <h3>Actions</h3>
+                    
+                    <div class="action-buttons">
+                        <button id="profile-export-day" class="btn btn-outline">
+                            <i class="material-icons">file_download</i> Export Day
+                        </button>
+                        <button id="profile-export-month" class="btn btn-outline">
+                            <i class="material-icons">file_download</i> Export Month
+                        </button>
+                        <button id="profile-logout-button" class="btn btn-primary">
+                            <i class="material-icons">logout</i> Logout
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
         
-        <!-- Profile View -->
-        <div class="profile-view" id="profile-view" style="display: none;">
-            <div class="profile-header">
-                <h2>Profile & Settings</h2>
+        <!-- Mobile navigation -->
+        <div class="mobile-nav">
+            <div class="nav-item active" data-view="timeline">
+                <i class="material-icons">view_timeline</i>
+                <span>Timeline</span>
             </div>
-            <div class="profile-content">
-                <div class="profile-info">
-                    <div class="profile-avatar">
-                        <i class="material-icons">account_circle</i>
-                    </div>
-                    <h3 id="profile-email">user@example.com</h3>
-                </div>
-                
-                <div class="search-section">
-                    <h4>Search Entries</h4>
-                    <input type="text" id="profile-search" placeholder="Search by title, tag, or description">
-                </div>
-                
-                <div class="filter-section">
-                    <h4>Filter by Mood</h4>
-                    <div class="mood-filters">
-                        <button class="mood-filter" data-mood="😊 Happy">😊</button>
-                        <button class="mood-filter" data-mood="😢 Sad">😢</button>
-                        <button class="mood-filter" data-mood="😠 Angry">😠</button>
-                        <button class="mood-filter" data-mood="😴 Tired">😴</button>
-                        <button class="mood-filter" data-mood="😌 Relaxed">😌</button>
-                    </div>
-                    
-                    <h4>Filter by Tags</h4>
-                    <div class="tag-filters" id="profile-tag-filters">
-                        <!-- Tags will be populated dynamically -->
-                    </div>
-                </div>
-                
-                <div class="export-section">
-                    <h4>Export Entries</h4>
-                    <button id="profile-export-day" class="btn btn-outline">Export Day</button>
-                    <button id="profile-export-month" class="btn btn-outline">Export Month</button>
-                    <div class="export-format">
-                        <label>
-                            <input type="radio" name="profile-export-format" value="json" checked> JSON
-                        </label>
-                        <label>
-                            <input type="radio" name="profile-export-format" value="txt"> TXT
-                        </label>
-                    </div>
-                </div>
-                
-                <div class="theme-toggle">
-                    <span class="material-icons">light_mode</span>
-                    <label class="switch">
-                        <input type="checkbox" id="profile-theme-toggle">
-                        <span class="slider round"></span>
-                    </label>
-                    <span class="material-icons">dark_mode</span>
-                </div>
-                
-                <button id="logout-button" class="btn btn-outline btn-danger">Logout</button>
+            <div class="nav-item" data-view="add-entry">
+                <i class="material-icons">add_circle</i>
+                <span>Add</span>
+            </div>
+            <div class="nav-item" data-view="profile">
+                <i class="material-icons">person</i>
+                <span>Profile</span>
             </div>
         </div>
     </div>
-
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.6.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.6.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.6.0/firebase-database-compat.js"></script>
     
-    <!-- App Scripts -->
+    <!-- Toast container will be created dynamically -->
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    
+    <!-- App scripts -->
     <script src="scripts/firebase-config.js"></script>
     <script src="scripts/auth.js"></script>
+    <script src="scripts/ui.js"></script>
     <script src="scripts/calendar.js"></script>
     <script src="scripts/entries.js"></script>
-    <script src="scripts/ui.js"></script>
     <script src="scripts/app.js"></script>
 </body>
 </html>

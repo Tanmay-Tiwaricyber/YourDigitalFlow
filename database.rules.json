@@ -1,0 +1,50 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "users": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "$uid === auth.uid",
+        "entries": {
+          "$date": {
+            "$time": {
+              ".validate": "newData.hasChildren(['title', 'description', 'mood'])",
+              "title": {
+                ".validate": "newData.isString() && newData.val().length <= 100"
+              },
+              "description": {
+                ".validate": "newData.isString() && newData.val().length <= 10000"
+              },
+              "mood": {
+                ".validate": "newData.isString() && newData.val().length <= 20"
+              },
+              "tags": {
+                "$tag": {
+                  ".validate": "newData.isString() && newData.val().length <= 30"
+                }
+              },
+              "$other": {
+                ".validate": false
+              }
+            }
+          }
+        },
+        "settings": {
+          ".validate": "newData.hasChildren(['theme'])",
+          "theme": {
+            ".validate": "newData.isString() && (newData.val() === 'light' || newData.val() === 'dark')"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "tags": {
+          "$tag": {
+            ".validate": "newData.isString() && newData.val().length <= 30"
+          }
+        }
+      }
+    }
+  }
+}
