@@ -54,11 +54,12 @@ body, #app {
 }
 header {
   padding: 1.2rem 1rem 0.5rem 1rem;
-  background: linear-gradient(90deg, var(--indigo) 0%, var(--emerald) 100%);
-  color: #fff;
+  background: var(--nav-bg);
+  color: var(--nav-fg);
   border-bottom-left-radius: var(--radius);
   border-bottom-right-radius: var(--radius);
   box-shadow: var(--shadow);
+  transition: background var(--transition), color var(--transition);
 }
 h1, h2 {
   font-weight: 700;
@@ -66,37 +67,55 @@ h1, h2 {
 }
 .timeline-list {
   flex: 1;
-  padding: 1rem;
+  padding: 1rem 0.5rem 1rem 1.5rem;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 2.2rem;
+  position: relative;
 }
-.timeline-card {
+.timeline-item {
+  display: flex;
+  align-items: flex-start;
+  position: relative;
+  min-height: 4.5rem;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+}
+.timeline-dot {
+  width: 1.1rem;
+  height: 1.1rem;
+  background: var(--emerald);
+  border-radius: 50%;
+  margin-right: 1.1rem;
+  margin-top: 0.5rem;
+  box-shadow: 0 2px 8px 0 rgba(16,185,129,0.18);
+  flex-shrink: 0;
+  z-index: 2;
+}
+.timeline-connector::after {
+  content: '';
+  position: absolute;
+  left: 0.55rem;
+  top: 1.6rem;
+  width: 0.18rem;
+  height: calc(100% - 1.6rem);
+  background: var(--emerald);
+  opacity: 0.25;
+  border-radius: 1rem;
+  z-index: 1;
+}
+.timeline-content {
   background: var(--card-bg);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   padding: 1rem;
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
-  transition: box-shadow var(--transition), background var(--transition);
   position: relative;
   animation: fadeIn 0.5s;
-}
-.timeline-card .tags {
-  display: flex;
-  gap: 0.3rem;
-  flex-wrap: wrap;
-}
-.tag {
-  background: var(--indigo);
-  color: #fff;
-  border-radius: 999px;
-  padding: 0.1rem 0.7rem;
-  font-size: 0.85rem;
-  margin-right: 0.2rem;
-  margin-bottom: 0.2rem;
-  box-shadow: 0 2px 8px 0 rgba(99,102,241,0.08);
 }
 .card-mood {
   font-size: 1.3rem;

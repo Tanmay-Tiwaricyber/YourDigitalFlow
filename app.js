@@ -190,16 +190,22 @@ function renderTimeline(data) {
   }
   timelineEmpty.style.display = 'none';
   const times = Object.keys(data).sort();
-  times.forEach(time => {
+  times.forEach((time, idx) => {
     const e = data[time];
     const card = document.createElement('div');
-    card.className = 'timeline-card';
+    card.className = 'timeline-card timeline-item';
     card.innerHTML = `
-      <div class="card-time">${time}</div>
-      <div class="card-title">${e.title} <span class="card-mood">${e.mood.split(' ')[0]}</span></div>
-      <div class="card-desc">${e.description}</div>
-      <div class="tags">${(e.tags||[]).map(t => `<span class="tag">${t}</span>`).join('')}</div>
+      <div class="timeline-dot"></div>
+      <div class="timeline-content">
+        <div class="card-time">${time}</div>
+        <div class="card-title">${e.title} <span class="card-mood">${e.mood.split(' ')[0]}</span></div>
+        <div class="card-desc">${e.description}</div>
+        <div class="tags">${(e.tags||[]).map(t => `<span class="tag">${t}</span>`).join('')}</div>
+      </div>
     `;
+    if (idx !== times.length - 1) {
+      card.classList.add('timeline-connector');
+    }
     timelineList.appendChild(card);
   });
 }
