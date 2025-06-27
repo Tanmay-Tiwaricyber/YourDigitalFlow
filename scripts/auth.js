@@ -118,14 +118,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// Helper function to show toast notifications with enhanced UI
+// Helper function to show toast notifications
 function showToast(message, type = 'success') {
-    // Remove existing toast if any
-    const existingToast = document.querySelector('.toast');
-    if (existingToast) {
-        document.body.removeChild(existingToast);
-    }
-    
     // Create toast element
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
@@ -134,24 +128,8 @@ function showToast(message, type = 'success') {
     // Add to document
     document.body.appendChild(toast);
     
-    // Make toast dismissable on click
-    toast.addEventListener('click', () => {
-        document.body.removeChild(toast);
-    });
-    
     // Remove after animation completes
     setTimeout(() => {
-        if (document.body.contains(toast)) {
-            // Add fade-out class
-            toast.style.opacity = '0';
-            toast.style.transform = 'translateY(-20px)';
-            
-            // Remove after fade out
-            setTimeout(() => {
-                if (document.body.contains(toast)) {
-                    document.body.removeChild(toast);
-                }
-            }, 300);
-        }
-    }, 4000);
+        document.body.removeChild(toast);
+    }, 3000);
 }
