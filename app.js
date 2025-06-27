@@ -86,7 +86,7 @@ auth.onAuthStateChanged(user => {
   if (user) {
     currentUser = user;
     showAuth(false);
-    userEmail.textContent = user.email;
+    renderProfileInfo();
     showPage('timeline-page');
     datePicker.value = currentDate;
     loadEntries();
@@ -337,3 +337,16 @@ function showEmpty(show) {
 document.addEventListener('DOMContentLoaded', () => {
   datePicker.value = currentDate;
 });
+
+// Profile page: professional look
+function renderProfileInfo() {
+  if (!currentUser) return;
+  const avatar = `<div class="profile-avatar">${currentUser.email ? currentUser.email[0].toUpperCase() : '?'}</div>`;
+  const details = `<div class="profile-details">
+    <div class="profile-email">${currentUser.email}</div>
+    <div class="profile-uid">${currentUser.uid}</div>
+  </div>`;
+  const actions = `<div class="profile-actions"><button id="logout-btn">Logout</button></div>`;
+  userEmail.parentElement.innerHTML = avatar + details + actions;
+  document.getElementById('logout-btn').addEventListener('click', () => auth.signOut());
+}
