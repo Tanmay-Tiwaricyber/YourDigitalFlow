@@ -1,5 +1,5 @@
-// app.js for Your Digital Flow
-// Firebase config
+// Your Digital Flow - app.js
+// Modular, clea
 const firebaseConfig = {
   apiKey: "AIzaSyA0s9vHEkDR0lWEXIsI8TvcHHjX9TQ5xXk",
   authDomain: "connectchat-d3713.firebaseapp.com",
@@ -9,379 +9,325 @@ const firebaseConfig = {
   messagingSenderId: "393420495514",
   appId: "1:393420495514:web:4ff7e73efe3d68172f5d23"
 };
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
 
-// Load Firebase SDKs
-const script1 = document.createElement('script');
-script1.src = "https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js";
-document.head.appendChild(script1);
-const script2 = document.createElement('script');
-script2.src = "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js";
-document.head.appendChild(script2);
-const script3 = document.createElement('script');
-script3.src = "https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js";
-document.head.appendChild(script3);
+// ---- DOM Elements ----
+const authModal = document.getElementById('auth-modal');
+const authForm = document.getElementById('auth-form');
+const authError = document.getElementById('auth-error');
+const timelinePage = document.getElementById('timeline-page');
+const addEntryPage = document.getElementById('add-entry-page');
+const profilePage = document.getElementById('profile-page');
+const navBtns = document.querySelectorAll('.nav-btn');
+const openAddEntryBtn = document.getElementById('open-add-entry');
+const closeAddEntryBtn = document.getElementById('close-add-entry');
+const entryForm = document.getElementById('entry-form');
+const entryError = document.getElementById('entry-error');
+const moodSelector = document.getElementById('mood-selector');
+const timelineList = document.getElementById('timeline-list');
+const timelineLoading = document.getElementById('timeline-loading');
+const timelineEmpty = document.getElementById('timeline-empty');
+const datePicker = document.getElementById('date-picker');
+const refreshBtn = document.getElementById('refresh-btn');
+const userEmail = document.getElementById('user-email');
+const logoutBtn = document.getElementById('logout-btn');
+const searchInput = document.getElementById('search-input');
+const filterMood = document.getElementById('filter-mood');
+const filterTag = document.getElementById('filter-tag');
+const exportJsonBtn = document.getElementById('export-json');
+const exportTxtBtn = document.getElementById('export-txt');
+const themeToggleBtn = document.getElementById('theme-toggle-btn');
+const profileEntries = document.getElementById('profile-entries');
 
-// Wait for Firebase scripts to load
-function waitForFirebase(cb) {
-  let loaded = 0;
-  [script1, script2, script3].forEach(s => s.onload = () => {
-    loaded++;
-    if (loaded === 3) cb();
-  });
-}
+// ---- State ----
+let currentUser = null;
+let currentMood = '';
+let currentDate = new Date().toISOString().slice(0,10);
+let entriesCache = {};
 
-waitForFirebase(() => {
-  firebase.initializeApp(firebaseConfig);
-  window.auth = firebase.auth();
-  window.db = firebase.database();
-  // TODO: Implement UI logic, auth, diary CRUD, etc.
-
-  // Timeline rendering logic
-  function renderTimeline(entries) {
-    const timeline = document.getElementById('timeline');
-    timeline.innerHTML = '';
-    if (!entries || Object.keys(entries).length === 0) {
-      timeline.innerHTML = '<p class="empty-msg">No entries for this date.</p>';
-      return;
-    }
-    // Sort by time
-    const times = Object.keys(entries).sort();
-    times.forEach(time => {
-      const entry = entries[time];
-      const card = document.createElement('div');
-      card.className = 'entry-card';
-      card.innerHTML = `
-        <div class="entry-header">
-          <span class="entry-time">${time}</span>
-          <span class="entry-mood">${entry.mood || ''}</span>
-        </div>
-        <h3 class="entry-title">${entry.title}</h3>
-        <p class="entry-description">${entry.description}</p>
-        ${entry.tags && entry.tags.length ? `<div class="entry-tags">${entry.tags.map(t => `<span class='tag'>${t}</span>`).join(' ')}</div>` : ''}
-        ${entry.image ? `<img class="entry-image" src="${entry.image}" alt="Entry Image" />` : ''}
-      `;
-      timeline.appendChild(card);
-    });
-  }
-
-  // Fetch and render entries for selected date
-  function loadEntriesForDate(date) {
-    const user = firebase.auth().currentUser;
-    if (!user) return;
-    firebase.database().ref(`users/${user.uid}/entries/${date}`).once('value', snap => {
-      renderTimeline(snap.val());
-    });
-  }
-
-  // Listen for date picker changes
-  const mainDatePicker = document.getElementById('main-date-picker');
-  if (mainDatePicker) {
-    mainDatePicker.value = new Date().toISOString().slice(0,10);
-    mainDatePicker.addEventListener('change', e => {
-      loadEntriesForDate(e.target.value);
-    });
-    // Initial load
-    firebase.auth().onAuthStateChanged(user => {
-      if (user) loadEntriesForDate(mainDatePicker.value);
-    });
-  }
-
-  // --- SEARCH & FILTER LOGIC ---
-  function filterEntries(entries, { keyword = '', mood = '', tag = '' } = {}) {
-    if (!entries) return {};
-    const filtered = {};
-    Object.keys(entries).forEach(time => {
-      const entry = entries[time];
-      const matchKeyword = keyword ? (
-        entry.title.toLowerCase().includes(keyword) ||
-        entry.description.toLowerCase().includes(keyword) ||
-        (entry.tags && entry.tags.join(' ').toLowerCase().includes(keyword))
-      ) : true;
-      const matchMood = mood ? entry.mood === mood : true;
-      const matchTag = tag ? (entry.tags && entry.tags.includes(tag)) : true;
-      if (matchKeyword && matchMood && matchTag) filtered[time] = entry;
-    });
-    return filtered;
-  }
-
-  // --- SIDEBAR SEARCH/FILTER ---
-  let lastSidebarEntries = {};
-  function updateSidebarTimeline() {
-    const date = document.getElementById('sidebar-date-picker').value || new Date().toISOString().slice(0,10);
-    const keyword = document.getElementById('sidebar-search').value.trim().toLowerCase();
-    const mood = document.getElementById('sidebar-mood-filter').value;
-    const tag = document.getElementById('sidebar-tag-filter').value.trim();
-    const filtered = filterEntries(lastSidebarEntries, { keyword, mood, tag });
-    renderTimeline(filtered);
-  }
-  // Listen for sidebar filter changes
-  ['sidebar-search','sidebar-mood-filter','sidebar-tag-filter','sidebar-date-picker'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.addEventListener('input', updateSidebarTimeline);
-  });
-  // Load entries for sidebar date
-  const sidebarDatePicker = document.getElementById('sidebar-date-picker');
-  if (sidebarDatePicker) {
-    sidebarDatePicker.value = new Date().toISOString().slice(0,10);
-    sidebarDatePicker.addEventListener('change', e => {
-      const user = firebase.auth().currentUser;
-      if (!user) return;
-      firebase.database().ref(`users/${user.uid}/entries/${e.target.value}`).once('value', snap => {
-        lastSidebarEntries = snap.val() || {};
-        updateSidebarTimeline();
-      });
-    });
-    // Initial load
-    firebase.auth().onAuthStateChanged(user => {
-      if (user) {
-        firebase.database().ref(`users/${user.uid}/entries/${sidebarDatePicker.value}`).once('value', snap => {
-          lastSidebarEntries = snap.val() || {};
-          updateSidebarTimeline();
-        });
-      }
-    });
-  }
-
-  // --- PROFILE PANEL SEARCH/FILTER ---
-  let lastProfileEntries = {};
-  function updateProfileTimeline() {
-    const keyword = document.getElementById('profile-search').value.trim().toLowerCase();
-    const mood = document.getElementById('profile-mood-filter').value;
-    const tag = document.getElementById('profile-tag-filter').value.trim();
-    const filtered = filterEntries(lastProfileEntries, { keyword, mood, tag });
-    renderTimeline(filtered);
-  }
-  ['profile-search','profile-mood-filter','profile-tag-filter'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.addEventListener('input', updateProfileTimeline);
-  });
-  // Show all entries for selected day in profile panel
-  function loadProfileEntries(date) {
-    const user = firebase.auth().currentUser;
-    if (!user) return;
-    firebase.database().ref(`users/${user.uid}/entries/${date}`).once('value', snap => {
-      lastProfileEntries = snap.val() || {};
-      updateProfileTimeline();
-    });
-  }
-  // When profile panel opens, load today's entries
-  const profilePanel = document.getElementById('profile-panel');
-  if (profilePanel) {
-    document.getElementById('nav-profile').addEventListener('click', () => {
-      profilePanel.style.display = 'flex';
-      loadProfileEntries(new Date().toISOString().slice(0,10));
-    });
-    document.getElementById('close-profile-panel').addEventListener('click', () => {
-      profilePanel.style.display = 'none';
-    });
-  }
-
-  // --- EXPORT LOGIC ---
-  function download(filename, content) {
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([content], {type: 'text/plain'}));
-    a.download = filename;
-    a.click();
-  }
-  function exportEntries(entries, format, filename) {
-    if (!entries || Object.keys(entries).length === 0) {
-      alert('No entries to export.');
-      return;
-    }
-    let content = '';
-    if (format === 'json') {
-      content = JSON.stringify(entries, null, 2);
-      filename += '.json';
-    } else {
-      // TXT: simple text export
-      content = Object.keys(entries).sort().map(time => {
-        const e = entries[time];
-        return `Time: ${time}\nTitle: ${e.title}\nDescription: ${e.description}\nMood: ${e.mood}\nTags: ${(e.tags||[]).join(', ')}\n`;
-      }).join('\n---\n');
-      filename += '.txt';
-    }
-    download(filename, content);
-  }
-  // Export day (sidebar)
-  document.getElementById('export-day').addEventListener('click', () => {
-    const user = firebase.auth().currentUser;
-    const date = document.getElementById('sidebar-date-picker').value || new Date().toISOString().slice(0,10);
-    if (!user) return;
-    firebase.database().ref(`users/${user.uid}/entries/${date}`).once('value', snap => {
-      const entries = snap.val();
-      const format = confirm('Export as JSON? (Cancel for TXT)') ? 'json' : 'txt';
-      exportEntries(entries, format, `diary-${date}`);
-    });
-  });
-  // Export month (sidebar)
-  document.getElementById('export-month').addEventListener('click', () => {
-    const user = firebase.auth().currentUser;
-    const date = document.getElementById('sidebar-date-picker').value || new Date().toISOString().slice(0,10);
-    const month = date.slice(0,7);
-    if (!user) return;
-    firebase.database().ref(`users/${user.uid}/entries`).once('value', snap => {
-      const all = snap.val() || {};
-      let monthEntries = {};
-      Object.keys(all).forEach(d => {
-        if (d.startsWith(month)) Object.assign(monthEntries, all[d]);
-      });
-      const format = confirm('Export as JSON? (Cancel for TXT)') ? 'json' : 'txt';
-      exportEntries(monthEntries, format, `diary-${month}`);
-    });
-  });
-  // Profile panel export
-  document.getElementById('profile-export-day').addEventListener('click', () => {
-    const user = firebase.auth().currentUser;
-    const date = new Date().toISOString().slice(0,10);
-    if (!user) return;
-    firebase.database().ref(`users/${user.uid}/entries/${date}`).once('value', snap => {
-      const entries = snap.val();
-      const format = confirm('Export as JSON? (Cancel for TXT)') ? 'json' : 'txt';
-      exportEntries(entries, format, `diary-${date}`);
-    });
-  });
-  document.getElementById('profile-export-month').addEventListener('click', () => {
-    const user = firebase.auth().currentUser;
-    const month = new Date().toISOString().slice(0,7);
-    if (!user) return;
-    firebase.database().ref(`users/${user.uid}/entries`).once('value', snap => {
-      const all = snap.val() || {};
-      let monthEntries = {};
-      Object.keys(all).forEach(d => {
-        if (d.startsWith(month)) Object.assign(monthEntries, all[d]);
-      });
-      const format = confirm('Export as JSON? (Cancel for TXT)') ? 'json' : 'txt';
-      exportEntries(monthEntries, format, `diary-${month}`);
-    });
-  });
-});
-
-// Theme toggle
+// ---- Theme ----
 function setTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
-  localStorage.setItem('theme', theme);
+  localStorage.setItem('ydf-theme', theme);
+  themeToggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
 }
 function toggleTheme() {
-  const current = localStorage.getItem('theme') === 'dark' ? 'light' : 'dark';
-  setTheme(current);
+  const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  setTheme(theme);
 }
-// On load, set theme
-setTheme(localStorage.getItem('theme') || 'light');
+(function initTheme() {
+  const saved = localStorage.getItem('ydf-theme') || 'light';
+  setTheme(saved);
+})();
+themeToggleBtn.addEventListener('click', toggleTheme);
 
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('theme-toggle').addEventListener('change', toggleTheme);
-
-  // Auth modal logic
-  const authModal = document.getElementById('auth-modal');
-  const authForm = document.getElementById('auth-form');
-  const authTitle = document.getElementById('auth-title');
-  const authSubmit = document.getElementById('auth-submit');
-  const switchAuth = document.getElementById('switch-auth');
-  let isSignup = false;
-
-  function showAuthModal(signup = false) {
-    isSignup = signup;
-    authTitle.textContent = signup ? 'Sign Up' : 'Login';
-    authSubmit.textContent = signup ? 'Sign Up' : 'Login';
-    document.getElementById('auth-toggle').innerHTML = signup ?
-      `Already have an account? <a href="#" id="switch-auth">Login</a>` :
-      `Don't have an account? <a href="#" id="switch-auth">Sign up</a>`;
-    authModal.style.display = 'flex';
-  }
-  function hideAuthModal() {
-    authModal.style.display = 'none';
-  }
-
-  // Show auth modal if not logged in
-  firebase.auth().onAuthStateChanged(user => {
-    if (!user) showAuthModal(false);
-    else hideAuthModal();
-  });
-
-  // Switch between login/signup
-  authModal.addEventListener('click', e => {
-    if (e.target.id === 'switch-auth') {
-      showAuthModal(!isSignup);
-    }
-  });
-
-  // Auth form submit
-  authForm.addEventListener('submit', e => {
-    e.preventDefault();
-    const email = document.getElementById('auth-email').value;
-    const password = document.getElementById('auth-password').value;
-    if (isSignup) {
-      firebase.auth().createUserWithEmailAndPassword(email, password)
-        .then(() => hideAuthModal())
-        .catch(err => alert(err.message));
-    } else {
-      firebase.auth().signInWithEmailAndPassword(email, password)
-        .then(() => hideAuthModal())
-        .catch(err => alert(err.message));
-    }
-  });
-
-  // Logout buttons
-  document.getElementById('logout-btn').addEventListener('click', () => firebase.auth().signOut());
-  document.getElementById('profile-logout').addEventListener('click', () => firebase.auth().signOut());
-
-  // Show user info in profile
-  firebase.auth().onAuthStateChanged(user => {
-    const info = document.getElementById('profile-info');
-    if (user && info) {
-      info.innerHTML = `<p><b>Email:</b> ${user.email}</p>`;
-    }
-  });
-
-  // Add Entry Form Submission
-  const addEntryForm = document.getElementById('add-entry-form');
-  if (addEntryForm) {
-    addEntryForm.addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const user = firebase.auth().currentUser;
-      if (!user) {
-        alert('You must be logged in to add entries.');
-        return;
+// ---- Auth ----
+function showAuth(show) {
+  authModal.classList.toggle('show', show);
+}
+authForm.addEventListener('submit', e => {
+  e.preventDefault();
+  const email = authForm['auth-email'].value;
+  const pass = authForm['auth-password'].value;
+  authError.textContent = '';
+  auth.signInWithEmailAndPassword(email, pass)
+    .catch(err => {
+      if (err.code === 'auth/user-not-found') {
+        auth.createUserWithEmailAndPassword(email, pass)
+          .catch(e => authError.textContent = e.message);
+      } else {
+        authError.textContent = err.message;
       }
-      const title = document.getElementById('entry-title').value.trim();
-      const description = document.getElementById('entry-description').value.trim();
-      const time = document.getElementById('entry-time').value;
-      const mood = document.getElementById('entry-mood').value;
-      const tagsRaw = document.getElementById('entry-tags').value;
-      const tags = tagsRaw.split(/[,\s]+/).filter(t => t);
-      const date = document.getElementById('main-date-picker').value || new Date().toISOString().slice(0,10);
-      const imageInput = document.getElementById('entry-image');
-      let imageBase64 = null;
-      if (imageInput && imageInput.files && imageInput.files[0]) {
-        imageBase64 = await toBase64(imageInput.files[0]);
-      }
-      const entry = {
-        title,
-        description,
-        mood,
-        tags,
-        image: imageBase64 || null
-      };
-      // Save to Firebase RTDB
-      firebase.database().ref(`users/${user.uid}/entries/${date}/${time}`).set(entry)
-        .then(() => {
-          alert('Entry saved!');
-          addEntryForm.reset();
-          document.getElementById('add-entry-modal').style.display = 'none';
-        })
-        .catch(err => {
-          alert('Error saving entry: ' + err.message);
-        });
     });
+});
+auth.onAuthStateChanged(user => {
+  if (user) {
+    currentUser = user;
+    showAuth(false);
+    userEmail.textContent = user.email;
+    showPage('timeline-page');
+    datePicker.value = currentDate;
+    loadEntries();
+  } else {
+    currentUser = null;
+    showAuth(true);
+  }
+});
+logoutBtn.addEventListener('click', () => auth.signOut());
+
+// ---- Navigation ----
+function showPage(pageId) {
+  [timelinePage, addEntryPage, profilePage].forEach(p => p.classList.remove('show'));
+  document.getElementById(pageId).classList.add('show');
+}
+navBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const page = btn.dataset.page;
+    if (page) showPage(page);
+  });
+});
+openAddEntryBtn.addEventListener('click', () => {
+  addEntryPage.classList.add('show');
+  setTimeout(() => document.getElementById('entry-title').focus(), 200);
+});
+closeAddEntryBtn.addEventListener('click', () => {
+  addEntryPage.classList.remove('show');
+  entryForm.reset();
+  currentMood = '';
+  moodSelector.querySelectorAll('button').forEach(b => b.classList.remove('selected'));
+  entryError.textContent = '';
+});
+
+// ---- Mood Selector ----
+moodSelector.querySelectorAll('button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    moodSelector.querySelectorAll('button').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    currentMood = btn.dataset.mood;
+  });
+});
+
+// ---- Add Entry ----
+entryForm.addEventListener('submit', e => {
+  e.preventDefault();
+  if (!currentMood) {
+    entryError.textContent = 'Select a mood.';
+    return;
+  }
+  const title = entryForm['entry-title'].value.trim();
+  const desc = entryForm['entry-description'].value.trim();
+  const time = entryForm['entry-time'].value;
+  const tags = entryForm['entry-tags'].value.split(/[,#\s]+/).filter(Boolean).map(t => t.startsWith('#') ? t : '#' + t);
+  if (!title || !desc || !time) {
+    entryError.textContent = 'Fill all fields.';
+    return;
+  }
+  entryError.textContent = 'Saving...';
+  const entry = { title, description: desc, mood: currentMood, tags };
+  const date = datePicker.value || currentDate;
+  db.ref(`users/${currentUser.uid}/entries/${date}/${time}`).set(entry)
+    .then(() => {
+      entryError.textContent = '';
+      addEntryPage.classList.remove('show');
+      entryForm.reset();
+      currentMood = '';
+      moodSelector.querySelectorAll('button').forEach(b => b.classList.remove('selected'));
+      loadEntries();
+    })
+    .catch(e => entryError.textContent = e.message);
+});
+
+// ---- Timeline ----
+datePicker.addEventListener('change', () => {
+  currentDate = datePicker.value;
+  loadEntries();
+});
+refreshBtn.addEventListener('click', loadEntries);
+function loadEntries() {
+  timelineLoading.style.display = 'block';
+  timelineList.innerHTML = '';
+  timelineEmpty.style.display = 'none';
+  const date = datePicker.value || currentDate;
+  db.ref(`users/${currentUser.uid}/entries/${date}`).once('value')
+    .then(snap => {
+      const data = snap.val();
+      entriesCache[date] = data || {};
+      renderTimeline(data);
+    })
+    .catch(() => {
+      timelineLoading.style.display = 'none';
+      timelineEmpty.style.display = 'block';
+    });
+}
+function renderTimeline(data) {
+  timelineLoading.style.display = 'none';
+  timelineList.innerHTML = '';
+  if (!data) {
+    timelineEmpty.style.display = 'block';
+    return;
+  }
+  timelineEmpty.style.display = 'none';
+  const times = Object.keys(data).sort();
+  times.forEach(time => {
+    const e = data[time];
+    const card = document.createElement('div');
+    card.className = 'timeline-card';
+    card.innerHTML = `
+      <div class="card-time">${time}</div>
+      <div class="card-title">${e.title} <span class="card-mood">${e.mood.split(' ')[0]}</span></div>
+      <div class="card-desc">${e.description}</div>
+      <div class="tags">${(e.tags||[]).map(t => `<span class="tag">${t}</span>`).join('')}</div>
+    `;
+    timelineList.appendChild(card);
+  });
+}
+
+// ---- Pull to Refresh (Mobile) ----
+let touchStartY = 0;
+let isPulling = false;
+timelinePage.addEventListener('touchstart', e => {
+  if (timelinePage.scrollTop === 0) touchStartY = e.touches[0].clientY;
+});
+timelinePage.addEventListener('touchmove', e => {
+  if (timelinePage.scrollTop === 0 && e.touches[0].clientY - touchStartY > 60 && !isPulling) {
+    isPulling = true;
+    loadEntries();
+    setTimeout(() => { isPulling = false; }, 1000);
   }
 });
 
-// Helper: Convert file to base64 string
-function toBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = error => reject(error);
+// ---- Profile/Settings ----
+function loadProfileEntries() {
+  profileEntries.innerHTML = '<div class="loading">Loading...</div>';
+  db.ref(`users/${currentUser.uid}/entries`).once('value')
+    .then(snap => {
+      const all = snap.val() || {};
+      let list = [];
+      Object.entries(all).forEach(([date, entries]) => {
+        Object.entries(entries).forEach(([time, e]) => {
+          list.push({ date, time, ...e });
+        });
+      });
+      renderProfileEntries(list);
+    });
+}
+function renderProfileEntries(list) {
+  profileEntries.innerHTML = '';
+  if (!list.length) {
+    profileEntries.innerHTML = '<div class="empty">No entries found.</div>';
+    return;
+  }
+  list.forEach(e => {
+    const card = document.createElement('div');
+    card.className = 'timeline-card';
+    card.innerHTML = `
+      <div class="card-time">${e.date} ${e.time}</div>
+      <div class="card-title">${e.title} <span class="card-mood">${e.mood.split(' ')[0]}</span></div>
+      <div class="card-desc">${e.description}</div>
+      <div class="tags">${(e.tags||[]).map(t => `<span class="tag">${t}</span>`).join('')}</div>
+    `;
+    profileEntries.appendChild(card);
   });
 }
+profilePage.addEventListener('show', loadProfileEntries);
+navBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (btn.dataset.page === 'profile-page') loadProfileEntries();
+  });
+});
+
+// ---- Search, Filter, Export ----
+function filterProfileEntries() {
+  db.ref(`users/${currentUser.uid}/entries`).once('value')
+    .then(snap => {
+      const all = snap.val() || {};
+      let list = [];
+      Object.entries(all).forEach(([date, entries]) => {
+        Object.entries(entries).forEach(([time, e]) => {
+          list.push({ date, time, ...e });
+        });
+      });
+      const q = searchInput.value.toLowerCase();
+      const mood = filterMood.value;
+      const tag = filterTag.value.trim();
+      list = list.filter(e =>
+        (!q || e.title.toLowerCase().includes(q) || e.description.toLowerCase().includes(q)) &&
+        (!mood || e.mood === mood) &&
+        (!tag || (e.tags||[]).some(t => t.toLowerCase().includes(tag.toLowerCase())))
+      );
+      renderProfileEntries(list);
+    });
+}
+searchInput.addEventListener('input', filterProfileEntries);
+filterMood.addEventListener('change', filterProfileEntries);
+filterTag.addEventListener('input', filterProfileEntries);
+
+function exportEntries(format) {
+  db.ref(`users/${currentUser.uid}/entries`).once('value')
+    .then(snap => {
+      const all = snap.val() || {};
+      let list = [];
+      Object.entries(all).forEach(([date, entries]) => {
+        Object.entries(entries).forEach(([time, e]) => {
+          list.push({ date, time, ...e });
+        });
+      });
+      let content = '';
+      let mime = '';
+      if (format === 'json') {
+        content = JSON.stringify(list, null, 2);
+        mime = 'application/json';
+      } else {
+        content = list.map(e => `${e.date} ${e.time}\n${e.title} [${e.mood}]\n${e.description}\nTags: ${(e.tags||[]).join(', ')}\n---`).join('\n\n');
+        mime = 'text/plain';
+      }
+      const blob = new Blob([content], { type: mime });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `ydf-entries.${format}`;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 100);
+    });
+}
+exportJsonBtn.addEventListener('click', () => exportEntries('json'));
+exportTxtBtn.addEventListener('click', () => exportEntries('txt'));
+
+// ---- Utility: Show/Hide Loading/Empty ----
+function showLoading(show) {
+  timelineLoading.style.display = show ? 'block' : 'none';
+}
+function showEmpty(show) {
+  timelineEmpty.style.display = show ? 'block' : 'none';
+}
+
+// ---- Initial ----
+document.addEventListener('DOMContentLoaded', () => {
+  datePicker.value = currentDate;
+});

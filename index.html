@@ -5,199 +5,127 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Your Digital Flow</title>
   <link rel="stylesheet" href="style.css" />
-  <script defer src="app.js"></script>
-  <style>
-    .entry-card {
-      background: var(--card-bg, #fff);
-      border-radius: 1rem;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
-      margin: 1rem 0;
-      padding: 1.2rem;
-      transition: box-shadow 0.2s;
-      animation: fadeIn 0.5s;
-      position: relative;
-    }
-    .entry-card .entry-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 0.5rem;
-    }
-    .entry-card .entry-title {
-      margin: 0.2rem 0 0.5rem 0;
-      font-size: 1.2rem;
-      font-weight: 600;
-    }
-    .entry-card .entry-description {
-      margin: 0.2rem 0 0.5rem 0;
-      color: var(--text-secondary, #555);
-    }
-    .entry-card .entry-tags {
-      margin: 0.5rem 0 0 0;
-    }
-    .entry-card .tag {
-      display: inline-block;
-      background: #e0e7ff;
-      color: #3730a3;
-      border-radius: 0.5rem;
-      padding: 0.1rem 0.7rem;
-      margin-right: 0.3rem;
-      font-size: 0.9rem;
-    }
-    .entry-card .entry-image {
-      display: block;
-      max-width: 100%;
-      max-height: 200px;
-      margin: 0.7rem 0 0 0;
-      border-radius: 0.7rem;
-      box-shadow: 0 1px 6px rgba(0,0,0,0.08);
-      object-fit: cover;
-      animation: fadeIn 0.7s;
-    }
-    .empty-msg {
-      text-align: center;
-      color: #888;
-      margin: 2rem 0;
-      font-size: 1.1rem;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-  </style>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 </head>
 <body>
-  <!-- Sidebar/Desktop Nav -->
-  <aside id="sidebar">
-    <div class="calendar-container">
-      <input type="date" id="sidebar-date-picker" />
+  <div id="app">
+    <!-- Auth Modal -->
+    <div id="auth-modal" class="modal show">
+      <div class="modal-content">
+        <h2>Sign In</h2>
+        <form id="auth-form">
+          <input type="email" id="auth-email" placeholder="Email" required />
+          <input type="password" id="auth-password" placeholder="Password" required />
+          <button type="submit">Sign In</button>
+        </form>
+        <p id="auth-error" class="error"></p>
+      </div>
     </div>
-    <input type="text" id="sidebar-search" placeholder="Search..." />
-    <div id="sidebar-filters">
-      <select id="sidebar-mood-filter">
-        <option value="">All Moods</option>
-        <option value="😊 Happy">😊 Happy</option>
-        <option value="😢 Sad">😢 Sad</option>
-        <option value="😠 Angry">😠 Angry</option>
-        <option value="😴 Tired">😴 Tired</option>
-      </select>
-      <input type="text" id="sidebar-tag-filter" placeholder="#tag" />
-    </div>
-    <div id="sidebar-export">
-      <button id="export-day">Export Day</button>
-      <button id="export-month">Export Month</button>
-    </div>
-    <div id="sidebar-theme-toggle">
-      <label>
-        <input type="checkbox" id="theme-toggle" />
-        <span>🌙/☀️</span>
-      </label>
-    </div>
-    <button id="logout-btn">Logout</button>
-  </aside>
 
-  <!-- Main Content -->
-  <main id="main-content">
-    <header>
-      <input type="date" id="main-date-picker" />
-      <button id="add-entry-btn">+ Add Entry</button>
-    </header>
-    <section id="timeline"></section>
-  </main>
+    <!-- Timeline Page -->
+    <section id="timeline-page" class="page show">
+      <header>
+        <div class="calendar-bar">
+          <input type="date" id="date-picker" />
+          <button id="refresh-btn" title="Refresh">⟳</button>
+        </div>
+        <h1>Your Digital Flow</h1>
+      </header>
+      <div id="timeline-list" class="timeline-list">
+        <!-- Entries will be injected here -->
+      </div>
+      <div id="timeline-loading" class="loading">Loading...</div>
+      <div id="timeline-empty" class="empty">No entries for this date.</div>
+    </section>
 
-  <!-- Mobile Bottom Nav -->
-  <nav id="bottom-nav">
-    <button id="nav-timeline">Timeline</button>
-    <button id="nav-add">Add</button>
-    <button id="nav-profile">Profile</button>
-  </nav>
+    <!-- Add Entry Page (Slide-up) -->
+    <section id="add-entry-page" class="page modal">
+      <div class="modal-content slide-up">
+        <h2>New Entry</h2>
+        <form id="entry-form">
+          <input type="text" id="entry-title" placeholder="Title" maxlength="40" required />
+          <textarea id="entry-description" placeholder="Description" maxlength="500" required></textarea>
+          <div class="form-row">
+            <label>Time</label>
+            <input type="time" id="entry-time" required />
+          </div>
+          <div class="form-row">
+            <label>Mood</label>
+            <div id="mood-selector" class="mood-selector">
+              <button type="button" data-mood="😊 Happy">😊</button>
+              <button type="button" data-mood="😐 Neutral">😐</button>
+              <button type="button" data-mood="😢 Sad">😢</button>
+              <button type="button" data-mood="😠 Angry">😠</button>
+              <button type="button" data-mood="🤩 Excited">🤩</button>
+            </div>
+          </div>
+          <div class="form-row">
+            <label>Tags</label>
+            <input type="text" id="entry-tags" placeholder="#wellness, #work" />
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="fab">Add Entry</button>
+            <button type="button" id="close-add-entry">Cancel</button>
+          </div>
+        </form>
+        <p id="entry-error" class="error"></p>
+      </div>
+    </section>
 
-  <!-- Add Entry Modal/Panel -->
-  <div id="add-entry-modal" class="modal">
-    <form id="add-entry-form">
-      <input type="text" id="entry-title" placeholder="Title" required />
-      <textarea id="entry-description" placeholder="Description" required></textarea>
-      <input type="time" id="entry-time" required />
-      <select id="entry-mood" required>
-        <option value="😊 Happy">😊 Happy</option>
-        <option value="😢 Sad">😢 Sad</option>
-        <option value="😠 Angry">😠 Angry</option>
-        <option value="😴 Tired">😴 Tired</option>
-      </select>
-      <input type="text" id="entry-tags" placeholder="#tags (comma or space separated)" />
-      <input type="file" id="entry-image" accept="image/*" />
-      <button type="submit">Save Entry</button>
-      <button type="button" id="close-entry-modal">Cancel</button>
-    </form>
+    <!-- Profile/Settings Page -->
+    <section id="profile-page" class="page">
+      <header>
+        <h2>Profile & Settings</h2>
+      </header>
+      <div class="profile-info">
+        <div id="user-email"></div>
+        <button id="logout-btn">Logout</button>
+      </div>
+      <div class="settings">
+        <div class="search-bar">
+          <input type="text" id="search-input" placeholder="Search entries..." />
+        </div>
+        <div class="filter-bar">
+          <select id="filter-mood">
+            <option value="">All Moods</option>
+            <option value="😊 Happy">😊 Happy</option>
+            <option value="😐 Neutral">😐 Neutral</option>
+            <option value="😢 Sad">😢 Sad</option>
+            <option value="😠 Angry">😠 Angry</option>
+            <option value="🤩 Excited">🤩 Excited</option>
+          </select>
+          <input type="text" id="filter-tag" placeholder="Filter by tag..." />
+        </div>
+        <div class="export-bar">
+          <button id="export-json">Export JSON</button>
+          <button id="export-txt">Export TXT</button>
+        </div>
+        <div class="theme-toggle">
+          <label>Theme</label>
+          <button id="theme-toggle-btn">🌙</button>
+        </div>
+      </div>
+      <div id="profile-entries" class="timeline-list"></div>
+    </section>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="bottom-nav">
+      <button class="nav-btn" data-page="timeline-page">
+        <span>🏠</span>
+        <span class="nav-label">Timeline</span>
+      </button>
+      <button class="nav-btn fab" id="open-add-entry">
+        <span>＋</span>
+      </button>
+      <button class="nav-btn" data-page="profile-page">
+        <span>👤</span>
+        <span class="nav-label">Profile</span>
+      </button>
+    </nav>
   </div>
-
-  <!-- Profile/Settings Panel -->
-  <div id="profile-panel" class="modal">
-    <div id="profile-info"></div>
-    <input type="text" id="profile-search" placeholder="Search entries..." />
-    <select id="profile-mood-filter">
-      <option value="">All Moods</option>
-      <option value="😊 Happy">😊 Happy</option>
-      <option value="😢 Sad">😢 Sad</option>
-      <option value="😠 Angry">😠 Angry</option>
-      <option value="😴 Tired">😴 Tired</option>
-    </select>
-    <input type="text" id="profile-tag-filter" placeholder="#tag" />
-    <button id="profile-export-day">Export Day</button>
-    <button id="profile-export-month">Export Month</button>
-    <label>
-      <input type="checkbox" id="profile-theme-toggle" />
-      <span>🌙/☀️</span>
-    </label>
-    <button id="profile-logout">Logout</button>
-    <button id="close-profile-panel">Close</button>
-  </div>
-
-  <!-- Auth Modal -->
-  <div id="auth-modal" class="modal">
-    <form id="auth-form">
-      <h2 id="auth-title">Login</h2>
-      <input type="email" id="auth-email" placeholder="Email" required />
-      <input type="password" id="auth-password" placeholder="Password" required />
-      <button type="submit" id="auth-submit">Login</button>
-      <p id="auth-toggle">Don't have an account? <a href="#" id="switch-auth">Sign up</a></p>
-    </form>
-  </div>
-
-  <script>
-    // Mobile bottom nav logic
-    document.addEventListener('DOMContentLoaded', function() {
-      const addEntryModal = document.getElementById('add-entry-modal');
-      const profilePanel = document.getElementById('profile-panel');
-      const addEntryBtn = document.getElementById('add-entry-btn');
-      const navAdd = document.getElementById('nav-add');
-      const navProfile = document.getElementById('nav-profile');
-      const navTimeline = document.getElementById('nav-timeline');
-      const closeEntryModal = document.getElementById('close-entry-modal');
-      const closeProfilePanel = document.getElementById('close-profile-panel');
-      // Show add entry modal
-      if (addEntryBtn) addEntryBtn.addEventListener('click', () => {
-        addEntryModal.style.display = 'flex';
-      });
-      if (navAdd) navAdd.addEventListener('click', () => {
-        addEntryModal.style.display = 'flex';
-      });
-      if (closeEntryModal) closeEntryModal.addEventListener('click', () => {
-        addEntryModal.style.display = 'none';
-      });
-      // Show profile panel
-      if (navProfile) navProfile.addEventListener('click', () => {
-        profilePanel.style.display = 'flex';
-      });
-      if (closeProfilePanel) closeProfilePanel.addEventListener('click', () => {
-        profilePanel.style.display = 'none';
-      });
-      // Show timeline (main content)
-      if (navTimeline) navTimeline.addEventListener('click', () => {
-        addEntryModal.style.display = 'none';
-        profilePanel.style.display = 'none';
-      });
-    });
-  </script>
+  <script src="app.js"></script>
 </body>
 </html>
