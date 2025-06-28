@@ -1,5 +1,3 @@
-// Your Digital Flow - app.js
-// Modular, clea
 const firebaseConfig = {
   apiKey: "AIzaSyA0s9vHEkDR0lWEXIsI8TvcHHjX9TQ5xXk",
   authDomain: "connectchat-d3713.firebaseapp.com",
@@ -9,344 +7,426 @@ const firebaseConfig = {
   messagingSenderId: "393420495514",
   appId: "1:393420495514:web:4ff7e73efe3d68172f5d23"
 };
+// Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
-const db = firebase.database();
+const database = firebase.database();
 
-// ---- DOM Elements ----
-const authModal = document.getElementById('auth-modal');
-const authForm = document.getElementById('auth-form');
-const authError = document.getElementById('auth-error');
-const timelinePage = document.getElementById('timeline-page');
-const addEntryPage = document.getElementById('add-entry-page');
-const profilePage = document.getElementById('profile-page');
-const navBtns = document.querySelectorAll('.nav-btn');
-const openAddEntryBtn = document.getElementById('open-add-entry');
-const closeAddEntryBtn = document.getElementById('close-add-entry');
-const entryForm = document.getElementById('entry-form');
-const entryError = document.getElementById('entry-error');
-const moodSelector = document.getElementById('mood-selector');
-const timelineList = document.getElementById('timeline-list');
-const timelineLoading = document.getElementById('timeline-loading');
-const timelineEmpty = document.getElementById('timeline-empty');
-const datePicker = document.getElementById('date-picker');
-const refreshBtn = document.getElementById('refresh-btn');
-const userEmail = document.getElementById('user-email');
+// DOM Elements
+const loginPage = document.getElementById('login-page');
+const mainApp = document.getElementById('main-app');
+const loginBtn = document.getElementById('login-btn');
+const signupLink = document.getElementById('signup-link');
+const emailInput = document.getElementById('email');
+const passwordInput = document.getElementById('password');
 const logoutBtn = document.getElementById('logout-btn');
-const searchInput = document.getElementById('search-input');
-const filterMood = document.getElementById('filter-mood');
-const filterTag = document.getElementById('filter-tag');
-const exportJsonBtn = document.getElementById('export-json');
-const exportTxtBtn = document.getElementById('export-txt');
-const themeToggleBtn = document.getElementById('theme-toggle-btn');
-const profileEntries = document.getElementById('profile-entries');
+const userEmail = document.getElementById('user-email');
+const themeToggle = document.getElementById('theme-toggle');
+const themeSwitch = document.getElementById('theme-switch');
+const navItems = document.querySelectorAll('.nav-item');
+const pages = document.querySelectorAll('.page');
+const fabBtn = document.getElementById('fab-btn');
+const loading = document.getElementById('loading');
+const toast = document.getElementById('toast');
+const submitEntryBtn = document.getElementById('submit-entry');
+const tagsInput = document.getElementById('entry-tags');
+const tagsContainer = document.getElementById('tags-container');
+const refreshBtn = document.getElementById('refresh-btn');
+const entriesContainer = document.getElementById('entries-container');
+const currentDateEl = document.getElementById('current-date');
+const searchBtn = document.getElementById('search-btn');
+const filterBtn = document.getElementById('filter-btn');
+const exportBtn = document.getElementById('export-btn');
 
-// ---- State ----
+// App State
+let currentPage = 'timeline-page';
+let selectedMood = '😊';
+let tags = [];
 let currentUser = null;
-let currentMood = '';
-let currentDate = new Date().toISOString().slice(0,10);
-let entriesCache = {};
 
-// ---- Theme ----
-function setTheme(theme) {
-  document.documentElement.setAttribute('data-theme', theme);
-  localStorage.setItem('ydf-theme', theme);
-  themeToggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+// Format date for display
+function formatDate(date) {
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    return date.toLocaleDateString('en-US', options);
 }
-function toggleTheme() {
-  const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-  setTheme(theme);
+
+// Update current date display
+function updateCurrentDate() {
+    currentDateEl.textContent = formatDate(new Date());
 }
-(function initTheme() {
-  const saved = localStorage.getItem('ydf-theme') || 'light';
-  setTheme(saved);
-})();
-themeToggleBtn.addEventListener('click', toggleTheme);
 
-// ---- Auth ----
-function showAuth(show) {
-  authModal.classList.toggle('show', show);
-}
-authForm.addEventListener('submit', e => {
-  e.preventDefault();
-  const email = authForm['auth-email'].value;
-  const pass = authForm['auth-password'].value;
-  authError.textContent = '';
-  auth.signInWithEmailAndPassword(email, pass)
-    .catch(err => {
-      if (err.code === 'auth/user-not-found') {
-        auth.createUserWithEmailAndPassword(email, pass)
-          .catch(e => authError.textContent = e.message);
-      } else {
-        authError.textContent = err.message;
-      }
-    });
-});
-auth.onAuthStateChanged(user => {
-  if (user) {
-    currentUser = user;
-    showAuth(false);
-    renderProfileInfo();
-    showPage('timeline-page');
-    datePicker.value = currentDate;
-    loadEntries();
-  } else {
-    currentUser = null;
-    showAuth(true);
-  }
-});
-logoutBtn.addEventListener('click', () => auth.signOut());
-
-// ---- Navigation ----
-function showPage(pageId) {
-  [timelinePage, addEntryPage, profilePage].forEach(p => p.classList.remove('show'));
-  document.getElementById(pageId).classList.add('show');
-}
-navBtns.forEach(btn => {
-  btn.addEventListener('click', () => {
-    const page = btn.dataset.page;
-    if (page) showPage(page);
-  });
-});
-openAddEntryBtn.addEventListener('click', () => {
-  addEntryPage.classList.add('show');
-  setTimeout(() => document.getElementById('entry-title').focus(), 200);
-});
-closeAddEntryBtn.addEventListener('click', () => {
-  addEntryPage.classList.remove('show');
-  entryForm.reset();
-  currentMood = '';
-  moodSelector.querySelectorAll('button').forEach(b => b.classList.remove('selected'));
-  entryError.textContent = '';
-});
-
-// ---- Mood Selector ----
-moodSelector.querySelectorAll('button').forEach(btn => {
-  btn.addEventListener('click', () => {
-    moodSelector.querySelectorAll('button').forEach(b => b.classList.remove('selected'));
-    btn.classList.add('selected');
-    currentMood = btn.dataset.mood;
-  });
-});
-
-// ---- Add Entry ----
-entryForm.addEventListener('submit', e => {
-  e.preventDefault();
-  if (!currentMood) {
-    entryError.textContent = 'Select a mood.';
-    return;
-  }
-  const title = entryForm['entry-title'].value.trim();
-  const desc = entryForm['entry-description'].value.trim();
-  const time = entryForm['entry-time'].value;
-  const tags = entryForm['entry-tags'].value.split(/[,#\s]+/).filter(Boolean).map(t => t.startsWith('#') ? t : '#' + t);
-  if (!title || !desc || !time) {
-    entryError.textContent = 'Fill all fields.';
-    return;
-  }
-  entryError.textContent = 'Saving...';
-  const entry = { title, description: desc, mood: currentMood, tags };
-  const date = datePicker.value || currentDate;
-  db.ref(`users/${currentUser.uid}/entries/${date}/${time}`).set(entry)
-    .then(() => {
-      entryError.textContent = '';
-      addEntryPage.classList.remove('show');
-      entryForm.reset();
-      currentMood = '';
-      moodSelector.querySelectorAll('button').forEach(b => b.classList.remove('selected'));
-      loadEntries();
-    })
-    .catch(e => entryError.textContent = e.message);
-});
-
-// ---- Timeline ----
-datePicker.addEventListener('change', () => {
-  currentDate = datePicker.value;
-  loadEntries();
-});
-refreshBtn.addEventListener('click', loadEntries);
-function loadEntries() {
-  timelineLoading.style.display = 'block';
-  timelineList.innerHTML = '';
-  timelineEmpty.style.display = 'none';
-  const date = datePicker.value || currentDate;
-  db.ref(`users/${currentUser.uid}/entries/${date}`).once('value')
-    .then(snap => {
-      const data = snap.val();
-      entriesCache[date] = data || {};
-      renderTimeline(data);
-    })
-    .catch(() => {
-      timelineLoading.style.display = 'none';
-      timelineEmpty.style.display = 'block';
-    });
-}
-function renderTimeline(data) {
-  timelineLoading.style.display = 'none';
-  timelineList.innerHTML = '';
-  if (!data) {
-    timelineEmpty.style.display = 'block';
-    return;
-  }
-  timelineEmpty.style.display = 'none';
-  const times = Object.keys(data).sort();
-  times.forEach((time, idx) => {
-    const e = data[time];
-    const card = document.createElement('div');
-    card.className = 'timeline-card timeline-item';
-    card.innerHTML = `
-      <div class="timeline-dot"></div>
-      <div class="timeline-content">
-        <div class="card-time">${time}</div>
-        <div class="card-title">${e.title} <span class="card-mood">${e.mood.split(' ')[0]}</span></div>
-        <div class="card-desc">${e.description}</div>
-        <div class="tags">${(e.tags||[]).map(t => `<span class="tag">${t}</span>`).join('')}</div>
-      </div>
-    `;
-    if (idx !== times.length - 1) {
-      card.classList.add('timeline-connector');
+// Initialize app
+function initApp() {
+    // Set current date
+    updateCurrentDate();
+    
+    // Check saved theme preference
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark-theme');
+        themeSwitch.checked = true;
+        themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
     }
-    timelineList.appendChild(card);
-  });
+    
+    // Check if user is logged in
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            // User is signed in
+            currentUser = user;
+            loginPage.style.display = 'none';
+            mainApp.style.display = 'block';
+            userEmail.textContent = user.email;
+            loadEntries();
+        } else {
+            // No user is signed in
+            loginPage.style.display = 'flex';
+            mainApp.style.display = 'none';
+        }
+    });
 }
 
-// ---- Pull to Refresh (Mobile) ----
-let touchStartY = 0;
-let isPulling = false;
-timelinePage.addEventListener('touchstart', e => {
-  if (timelinePage.scrollTop === 0) touchStartY = e.touches[0].clientY;
+// Theme toggle functionality
+themeToggle.addEventListener('click', () => {
+    document.body.classList.toggle('dark-theme');
+    const isDark = document.body.classList.contains('dark-theme');
+    
+    if (isDark) {
+        localStorage.setItem('theme', 'dark');
+        themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+        themeSwitch.checked = true;
+    } else {
+        localStorage.setItem('theme', 'light');
+        themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+        themeSwitch.checked = false;
+    }
 });
-timelinePage.addEventListener('touchmove', e => {
-  if (timelinePage.scrollTop === 0 && e.touches[0].clientY - touchStartY > 60 && !isPulling) {
-    isPulling = true;
+
+// Navigation
+navItems.forEach(item => {
+    item.addEventListener('click', () => {
+        const pageId = item.getAttribute('data-page');
+        showPage(pageId);
+        
+        // Update active nav item
+        navItems.forEach(navItem => {
+            navItem.classList.remove('active');
+        });
+        item.classList.add('active');
+    });
+});
+
+// FAB button click
+fabBtn.addEventListener('click', () => {
+    showPage('add-entry-page');
+    
+    // Update active nav item
+    navItems.forEach(item => {
+        item.classList.remove('active');
+        if (item.getAttribute('data-page') === 'add-entry-page') {
+            item.classList.add('active');
+        }
+    });
+});
+
+// Show page with transition
+function showPage(pageId) {
+    // Hide all pages
+    pages.forEach(page => {
+        page.classList.remove('active');
+    });
+    
+    // Show selected page
+    document.getElementById(pageId).classList.add('active');
+    currentPage = pageId;
+}
+
+// Mood selection
+const moodOptions = document.querySelectorAll('.mood-option');
+moodOptions.forEach(option => {
+    option.addEventListener('click', () => {
+        moodOptions.forEach(opt => opt.classList.remove('active'));
+        option.classList.add('active');
+        selectedMood = option.textContent;
+    });
+});
+
+// Tags input handling
+tagsInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && tagsInput.value.trim() !== '') {
+        const tagText = tagsInput.value.trim();
+        tags.push(tagText);
+        renderTags();
+        tagsInput.value = '';
+    }
+});
+
+function renderTags() {
+    tagsContainer.innerHTML = '';
+    tags.forEach(tag => {
+        const tagElement = document.createElement('span');
+        tagElement.className = 'tag';
+        tagElement.textContent = `#${tag}`;
+        tagsContainer.appendChild(tagElement);
+    });
+}
+
+// Show loading indicator
+function showLoading() {
+    loading.style.display = 'flex';
+}
+
+// Hide loading indicator
+function hideLoading() {
+    loading.style.display = 'none';
+}
+
+// Show toast message
+function showToast(message) {
+    toast.textContent = message;
+    toast.classList.add('show');
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 3000);
+}
+
+// Login functionality
+loginBtn.addEventListener('click', () => {
+    const email = emailInput.value;
+    const password = passwordInput.value;
+    
+    if (email && password) {
+        showLoading();
+        
+        auth.signInWithEmailAndPassword(email, password)
+            .then((userCredential) => {
+                hideLoading();
+                showToast('Login successful');
+            })
+            .catch((error) => {
+                hideLoading();
+                showToast('Login failed: ' + error.message);
+            });
+    } else {
+        showToast('Please enter email and password');
+    }
+});
+
+// Signup link
+signupLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    const email = emailInput.value;
+    const password = passwordInput.value;
+    
+    if (email && password) {
+        showLoading();
+        
+        auth.createUserWithEmailAndPassword(email, password)
+            .then((userCredential) => {
+                hideLoading();
+                showToast('Account created successfully');
+            })
+            .catch((error) => {
+                hideLoading();
+                showToast('Signup failed: ' + error.message);
+            });
+    } else {
+        showToast('Please enter email and password');
+    }
+});
+
+// Logout functionality
+logoutBtn.addEventListener('click', () => {
+    showLoading();
+    
+    auth.signOut()
+        .then(() => {
+            hideLoading();
+            showToast('Successfully logged out');
+        })
+        .catch((error) => {
+            hideLoading();
+            showToast('Logout failed: ' + error.message);
+        });
+});
+
+// Add entry functionality
+submitEntryBtn.addEventListener('click', () => {
+    const title = document.getElementById('entry-title').value;
+    const description = document.getElementById('entry-description').value;
+    
+    if (title && description) {
+        showLoading();
+        
+        // Get current date and time
+        const now = new Date();
+        const dateStr = now.toISOString().split('T')[0];
+        const timeStr = now.toTimeString().split(' ')[0].substring(0, 5);
+        
+        // Create entry object
+        const entry = {
+            title: title,
+            description: description,
+            mood: selectedMood,
+            tags: tags,
+            timestamp: firebase.database.ServerValue.TIMESTAMP
+        };
+        
+        // Save to Firebase RTDB
+        if (currentUser) {
+            const entryRef = database.ref(`users/${currentUser.uid}/entries/${dateStr}/${timeStr}`);
+            entryRef.set(entry)
+                .then(() => {
+                    hideLoading();
+                    showToast('Entry added successfully!');
+                    
+                    // Reset form
+                    document.getElementById('entry-title').value = '';
+                    document.getElementById('entry-description').value = '';
+                    tags = [];
+                    renderTags();
+                    
+                    // Show timeline page
+                    showPage('timeline-page');
+                    
+                    // Update nav
+                    navItems.forEach(item => {
+                        item.classList.remove('active');
+                        if (item.getAttribute('data-page') === 'timeline-page') {
+                            item.classList.add('active');
+                        }
+                    });
+                    
+                    // Reload entries
+                    loadEntries();
+                })
+                .catch((error) => {
+                    hideLoading();
+                    showToast('Error saving entry: ' + error.message);
+                });
+        } else {
+            hideLoading();
+            showToast('User not authenticated');
+        }
+    } else {
+        showToast('Please enter title and description');
+    }
+});
+
+// Refresh button
+refreshBtn.addEventListener('click', () => {
+    showLoading();
     loadEntries();
-    setTimeout(() => { isPulling = false; }, 1000);
-  }
 });
 
-// ---- Profile/Settings ----
-function loadProfileEntries() {
-  profileEntries.innerHTML = '<div class="loading">Loading...</div>';
-  db.ref(`users/${currentUser.uid}/entries`).once('value')
-    .then(snap => {
-      const all = snap.val() || {};
-      let list = [];
-      Object.entries(all).forEach(([date, entries]) => {
-        Object.entries(entries).forEach(([time, e]) => {
-          list.push({ date, time, ...e });
+// Load entries from Firebase
+function loadEntries() {
+    if (!currentUser) return;
+    
+    entriesContainer.innerHTML = '<div class="pull-to-refresh">Loading entries...</div>';
+    
+    // Get today's entries
+    const today = new Date().toISOString().split('T')[0];
+    const entriesRef = database.ref(`users/${currentUser.uid}/entries/${today}`);
+    
+    entriesRef.once('value')
+        .then((snapshot) => {
+            const entries = snapshot.val();
+            renderEntries(entries);
+            hideLoading();
+        })
+        .catch((error) => {
+            hideLoading();
+            showToast('Error loading entries: ' + error.message);
+            entriesContainer.innerHTML = '<div class="pull-to-refresh">Error loading entries. Pull to refresh.</div>';
         });
-      });
-      renderProfileEntries(list);
+}
+
+// Render entries to the timeline
+function renderEntries(entries) {
+    entriesContainer.innerHTML = '';
+    
+    if (!entries) {
+        entriesContainer.innerHTML = '<div class="pull-to-refresh">No entries yet. Add your first entry!</div>';
+        return;
+    }
+    
+    // Convert entries object to array and sort by time
+    const entriesArray = Object.entries(entries)
+        .map(([time, entry]) => ({ time, ...entry }))
+        .sort((a, b) => a.time.localeCompare(b.time));
+    
+    entriesArray.forEach(entry => {
+        const entryElement = document.createElement('div');
+        entryElement.className = 'entry-card';
+        entryElement.innerHTML = `
+            <div class="entry-header">
+                <div class="entry-time">${entry.time}</div>
+                <div class="entry-mood">${entry.mood}</div>
+            </div>
+            <h3 class="entry-title">${entry.title}</h3>
+            <p class="entry-description">${entry.description}</p>
+            <div class="entry-tags">
+                ${entry.tags ? entry.tags.map(tag => `<span class="tag">#${tag}</span>`).join('') : ''}
+            </div>
+        `;
+        entriesContainer.appendChild(entryElement);
     });
+    
+    entriesContainer.innerHTML += '<div class="pull-to-refresh">Pull down to refresh</div>';
 }
-function renderProfileEntries(list) {
-  profileEntries.innerHTML = '';
-  if (!list.length) {
-    profileEntries.innerHTML = '<div class="empty">No entries found.</div>';
-    return;
-  }
-  list.forEach(e => {
-    const card = document.createElement('div');
-    card.className = 'timeline-card';
-    card.innerHTML = `
-      <div class="card-time">${e.date} ${e.time}</div>
-      <div class="card-title">${e.title} <span class="card-mood">${e.mood.split(' ')[0]}</span></div>
-      <div class="card-desc">${e.description}</div>
-      <div class="tags">${(e.tags||[]).map(t => `<span class="tag">${t}</span>`).join('')}</div>
-    `;
-    profileEntries.appendChild(card);
-  });
-}
-profilePage.addEventListener('show', loadProfileEntries);
-navBtns.forEach(btn => {
-  btn.addEventListener('click', () => {
-    if (btn.dataset.page === 'profile-page') loadProfileEntries();
-  });
+
+// Export data functionality
+exportBtn.addEventListener('click', () => {
+    if (!currentUser) {
+        showToast('Please log in to export data');
+        return;
+    }
+    
+    showLoading();
+    
+    const entriesRef = database.ref(`users/${currentUser.uid}/entries`);
+    entriesRef.once('value')
+        .then((snapshot) => {
+            const data = snapshot.val();
+            const dataStr = JSON.stringify(data, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `your-digital-flow-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            hideLoading();
+            showToast('Data exported successfully');
+        })
+        .catch((error) => {
+            hideLoading();
+            showToast('Export failed: ' + error.message);
+        });
 });
 
-// ---- Search, Filter, Export ----
-function filterProfileEntries() {
-  db.ref(`users/${currentUser.uid}/entries`).once('value')
-    .then(snap => {
-      const all = snap.val() || {};
-      let list = [];
-      Object.entries(all).forEach(([date, entries]) => {
-        Object.entries(entries).forEach(([time, e]) => {
-          list.push({ date, time, ...e });
-        });
-      });
-      const q = searchInput.value.toLowerCase();
-      const mood = filterMood.value;
-      const tag = filterTag.value.trim();
-      list = list.filter(e =>
-        (!q || e.title.toLowerCase().includes(q) || e.description.toLowerCase().includes(q)) &&
-        (!mood || e.mood === mood) &&
-        (!tag || (e.tags||[]).some(t => t.toLowerCase().includes(tag.toLowerCase())))
-      );
-      renderProfileEntries(list);
-    });
-}
-searchInput.addEventListener('input', filterProfileEntries);
-filterMood.addEventListener('change', filterProfileEntries);
-filterTag.addEventListener('input', filterProfileEntries);
-
-function exportEntries(format) {
-  db.ref(`users/${currentUser.uid}/entries`).once('value')
-    .then(snap => {
-      const all = snap.val() || {};
-      let list = [];
-      Object.entries(all).forEach(([date, entries]) => {
-        Object.entries(entries).forEach(([time, e]) => {
-          list.push({ date, time, ...e });
-        });
-      });
-      let content = '';
-      let mime = '';
-      if (format === 'json') {
-        content = JSON.stringify(list, null, 2);
-        mime = 'application/json';
-      } else {
-        content = list.map(e => `${e.date} ${e.time}\n${e.title} [${e.mood}]\n${e.description}\nTags: ${(e.tags||[]).join(', ')}\n---`).join('\n\n');
-        mime = 'text/plain';
-      }
-      const blob = new Blob([content], { type: mime });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `ydf-entries.${format}`;
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => {
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      }, 100);
-    });
-}
-exportJsonBtn.addEventListener('click', () => exportEntries('json'));
-exportTxtBtn.addEventListener('click', () => exportEntries('txt'));
-
-// ---- Utility: Show/Hide Loading/Empty ----
-function showLoading(show) {
-  timelineLoading.style.display = show ? 'block' : 'none';
-}
-function showEmpty(show) {
-  timelineEmpty.style.display = show ? 'block' : 'none';
-}
-
-// ---- Initial ----
-document.addEventListener('DOMContentLoaded', () => {
-  datePicker.value = currentDate;
+// Search functionality
+searchBtn.addEventListener('click', () => {
+    const searchTerm = prompt('Enter search keyword:');
+    if (searchTerm) {
+        showToast(`Searching for: ${searchTerm}`);
+        // In a real app, implement search logic
+    }
 });
 
-// Profile page: professional look
-function renderProfileInfo() {
-  if (!currentUser) return;
-  const avatar = `<div class="profile-avatar">${currentUser.email ? currentUser.email[0].toUpperCase() : '?'}</div>`;
-  const details = `<div class="profile-details">
-    <div class="profile-email">${currentUser.email}</div>
-    <div class="profile-uid">${currentUser.uid}</div>
-  </div>`;
-  const actions = `<div class="profile-actions"><button id="logout-btn">Logout</button></div>`;
-  userEmail.parentElement.innerHTML = avatar + details + actions;
-  document.getElementById('logout-btn').addEventListener('click', () => auth.signOut());
-}
+// Filter functionality
+filterBtn.addEventListener('click', () => {
+    const mood = prompt('Enter mood emoji to filter:');
+    if (mood) {
+        showToast(`Filtering by mood: ${mood}`);
+        // In a real app, implement filter logic
+    }
+});
+
+// Initialize the app
+initApp();
