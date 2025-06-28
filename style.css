@@ -15,6 +15,20 @@
     
     /* Theme toggle transition */
     --transition: all 0.3s ease;
+
+    /* Glassmorphism variables */
+    --glass-blur: 22px;
+    --glass-saturate: 180%;
+    --glass-bg: rgba(255, 255, 255, 0.22);
+    --glass-border: rgba(255, 255, 255, 0.28);
+    --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18);
+    --glass-gradient: linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(129,140,248,0.10) 100%);
+    --glass-border-width: 2px;
+    --glass-hover-brightness: 1.10;
+    --accent-gradient: linear-gradient(90deg, var(--accent), var(--accent-light));
+    --radius-lg: 24px;
+    --radius-md: 16px;
+    --radius-sm: 10px;
 }
 
 .dark-theme {
@@ -27,6 +41,29 @@
     --border: #334155;
     --muted: #64748b;
     --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+    /* Glassmorphism variables */
+    --glass-bg: rgba(30, 41, 59, 0.32);
+    --glass-border: rgba(129, 140, 248, 0.18);
+    --glass-shadow: 0 8px 32px 0 rgba(16, 16, 32, 0.32);
+    --glass-gradient: linear-gradient(135deg, rgba(30,41,59,0.32) 0%, rgba(129,140,248,0.10) 100%);
+}
+
+/* --- Advanced Glassmorphism Styles --- */
+.glass {
+    background: var(--glass-gradient), var(--glass-bg);
+    box-shadow: var(--glass-shadow);
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    border-radius: var(--radius-lg);
+    border: var(--glass-border-width) solid var(--glass-border);
+    transition: var(--transition), box-shadow 0.4s cubic-bezier(.4,2,.6,1), filter 0.3s;
+    filter: brightness(1);
+}
+
+.glass:hover {
+    filter: brightness(var(--glass-hover-brightness));
+    box-shadow: 0 16px 48px 0 rgba(79, 70, 229, 0.18), var(--glass-shadow);
 }
 
 * {
@@ -108,9 +145,12 @@ body {
 .page-container {
     flex: 1;
     overflow-y: auto;
-    padding: 16px;
+    padding: 24px 8px 24px 8px;
     position: relative;
     transition: transform 0.3s ease;
+    max-width: 100vw;
+    min-height: 60vh;
+    background: none;
 }
 
 .page {
@@ -118,6 +158,10 @@ body {
     opacity: 0;
     transform: translateY(10px);
     transition: opacity 0.3s ease, transform 0.3s ease;
+    border-radius: var(--radius-lg);
+    margin-bottom: 24px;
+    box-shadow: none;
+    background: none;
 }
 
 .page.active {
@@ -244,9 +288,9 @@ body {
 }
 
 .form-input:focus {
-    outline: none;
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.3);
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(129, 140, 248, 0.18);
 }
 
 .mood-selector {
@@ -302,6 +346,25 @@ body {
 }
 
 .btn-submit:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+}
+
+.btn-login {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-light));
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    margin-top: 20px;
+}
+
+.btn-login:hover {
     opacity: 0.9;
     transform: translateY(-2px);
 }
@@ -433,6 +496,8 @@ input:checked + .theme-slider:before {
     z-index: 100;
     max-width: 480px;
     margin: 0 auto;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    box-shadow: 0 -2px 24px rgba(79, 70, 229, 0.08);
 }
 
 .nav-item {
@@ -448,7 +513,9 @@ input:checked + .theme-slider:before {
 }
 
 .nav-item.active {
-    color: var(--accent);
+    background: var(--accent-gradient);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(79, 70, 229, 0.10);
 }
 
 .nav-item i {
@@ -464,13 +531,13 @@ input:checked + .theme-slider:before {
     width: 60px;
     height: 60px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--accent), var(--accent-light));
+    background: linear-gradient(135deg, var(--accent), var(--accent-light), #fff2 100%);
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1.8rem;
-    box-shadow: 0 4px 20px rgba(79, 70, 229, 0.3);
+    box-shadow: 0 4px 24px rgba(79, 70, 229, 0.25);
     cursor: pointer;
     transition: var(--transition);
     z-index: 101;
@@ -604,55 +671,15 @@ input:checked + .theme-slider:before {
     font-weight: 500;
 }
 
-/* --- Glassmorphism Styles --- */
-.glass {
-    background: rgba(255, 255, 255, 0.18);
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18);
-    backdrop-filter: blur(12px) saturate(180%);
-    -webkit-backdrop-filter: blur(12px) saturate(180%);
-    border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    transition: var(--transition);
-}
-
-.dark-theme .glass {
-    background: rgba(30, 41, 59, 0.32);
-    box-shadow: 0 8px 32px 0 rgba(16, 16, 32, 0.32);
-    border: 1px solid rgba(129, 140, 248, 0.12);
-}
-
-/* Apply glassmorphism to key containers */
-.app-header,
-.date-selector,
-.timeline-container,
-.entry-card,
-.add-entry-container,
-.login-form,
-.settings-option {
-    /* Add glass class for glassmorphism */
-    /* The class will be added via JS or HTML */
-}
-
-/* Override backgrounds for glass effect */
-.app-header.glass,
-.date-selector.glass,
-.timeline-container.glass,
-.entry-card.glass,
-.add-entry-container.glass,
-.login-form.glass,
-.settings-option.glass {
-    background: none;
-}
-
-/* Slightly increase border for glass effect */
-.entry-card.glass,
-.settings-option.glass {
-    border: 1.5px solid rgba(255,255,255,0.18);
-}
-
 /* Responsive adjustments */
 @media (max-width: 480px) {
     body {
         max-width: 100%;
+    }
+    .app-header, .date-selector, .timeline-container, .entry-card, .add-entry-container, .login-form, .settings-option {
+        border-radius: var(--radius-md);
+    }
+    .page-container {
+        padding: 12px 2px 80px 2px;
     }
 }

@@ -81,6 +81,7 @@ function initApp() {
             // No user is signed in
             loginPage.style.display = 'flex';
             mainApp.style.display = 'none';
+            focusFirstInputOnLogin();
         }
     });
 }
@@ -128,15 +129,16 @@ fabBtn.addEventListener('click', () => {
     });
 });
 
-// Show page with transition
+// Modern smooth page transitions
 function showPage(pageId) {
-    // Hide all pages
     pages.forEach(page => {
         page.classList.remove('active');
     });
-    
-    // Show selected page
-    document.getElementById(pageId).classList.add('active');
+    const nextPage = document.getElementById(pageId);
+    if (nextPage) {
+        nextPage.classList.add('active');
+        nextPage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
     currentPage = pageId;
 }
 
@@ -333,6 +335,15 @@ window.addEventListener('DOMContentLoaded', () => {
     document.querySelector('.login-form')?.classList.add('glass');
     // Settings options
     document.querySelectorAll('.settings-option').forEach(el => el.classList.add('glass'));
+    // Modern: add focus-visible for keyboard navigation
+    document.body.addEventListener('keydown', e => {
+        if (e.key === 'Tab') {
+            document.body.classList.add('user-is-tabbing');
+        }
+    });
+    document.body.addEventListener('mousedown', () => {
+        document.body.classList.remove('user-is-tabbing');
+    });
 });
 
 // Calendar icon click: open date picker and update timeline
@@ -485,6 +496,30 @@ filterBtn.addEventListener('click', () => {
     if (mood) {
         showToast(`Filtering by mood: ${mood}`);
         // In a real app, implement filter logic
+    }
+});
+
+// Modern: focus first input on login page show
+function focusFirstInputOnLogin() {
+    if (loginPage.style.display !== 'none') {
+        setTimeout(() => {
+            emailInput?.focus();
+        }, 200);
+    }
+}
+auth.onAuthStateChanged(user => {
+    if (user) {
+        // User is signed in
+        currentUser = user;
+        loginPage.style.display = 'none';
+        mainApp.style.display = 'block';
+        userEmail.textContent = user.email;
+        loadEntries();
+    } else {
+        // No user is signed in
+        loginPage.style.display = 'flex';
+        mainApp.style.display = 'none';
+        focusFirstInputOnLogin();
     }
 });
 
