@@ -1,131 +1,206 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Your Digital Flow</title>
-  <link rel="stylesheet" href="style.css" />
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Your Digital Flow</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="app">
-    <!-- Auth Modal -->
-    <div id="auth-modal" class="modal show">
-      <div class="modal-content">
-        <h2>Sign In</h2>
-        <form id="auth-form">
-          <input type="email" id="auth-email" placeholder="Email" required />
-          <input type="password" id="auth-password" placeholder="Password" required />
-          <button type="submit">Sign In</button>
-        </form>
-        <p id="auth-error" class="error"></p>
-      </div>
+    <div class="app-container">
+        <!-- Login Page -->
+        <div class="login-container" id="login-page">
+            <div class="login-logo">
+                <div class="logo-icon">
+                    <i class="fas fa-book-open"></i>
+                </div>
+                <div class="logo-text">Your Digital Flow</div>
+            </div>
+            
+            <div class="login-form">
+                <div class="form-group">
+                    <label class="form-label" for="email">Email</label>
+                    <input type="email" id="email" class="form-input" placeholder="Enter your email">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="password">Password</label>
+                    <input type="password" id="password" class="form-input" placeholder="Enter your password">
+                </div>
+                
+                <button class="btn-login" id="login-btn">Sign In</button>
+                
+                <div class="signup-link">
+                    Don't have an account? <a href="#" id="signup-link">Sign Up</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main App (Hidden until login) -->
+        <div id="main-app" style="display:none">
+            <!-- Header -->
+            <header class="app-header">
+                <h1 class="app-title">Your Digital Flow</h1>
+                <div class="header-actions">
+                    <button class="icon-btn" id="theme-toggle">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <button class="icon-btn" id="refresh-btn">
+                        <i class="fas fa-sync"></i>
+                    </button>
+                </div>
+            </header>
+            
+            <!-- Pages Container -->
+            <div class="page-container">
+                <!-- Timeline Page -->
+                <div class="page active" id="timeline-page">
+                    <div class="date-selector">
+                        <div class="date-display" id="current-date">June 28, 2025</div>
+                        <div class="calendar-icon">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-container" id="entries-container">
+                        <!-- Entries will be loaded here -->
+                    </div>
+                    
+                    <div class="pull-to-refresh">
+                        Pull down to refresh
+                    </div>
+                </div>
+                
+                <!-- Add Entry Page -->
+                <div class="page" id="add-entry-page">
+                    <div class="add-entry-container">
+                        <h2 style="margin-bottom: 24px;">Add New Entry</h2>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="entry-title">Title</label>
+                            <input type="text" id="entry-title" class="form-input" placeholder="What's the title?">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="entry-description">Description</label>
+                            <textarea id="entry-description" class="form-input" rows="4" placeholder="Write your thoughts..."></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Mood</label>
+                            <div class="mood-selector">
+                                <div class="mood-option active">😊</div>
+                                <div class="mood-option">😐</div>
+                                <div class="mood-option">😔</div>
+                                <div class="mood-option">🤩</div>
+                                <div class="mood-option">😴</div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="entry-tags">Tags</label>
+                            <div class="tag-input-container">
+                                <input type="text" id="entry-tags" class="form-input" placeholder="Add tags (separate by commas)">
+                                <div class="tag-input-hint">Enter to add</div>
+                            </div>
+                            <div class="entry-tags" id="tags-container" style="margin-top: 10px;">
+                                <!-- Tags will appear here -->
+                            </div>
+                        </div>
+                        
+                        <button class="btn-submit" id="submit-entry">Add Entry</button>
+                    </div>
+                </div>
+                
+                <!-- Profile Page -->
+                <div class="page" id="profile-page">
+                    <div class="profile-header">
+                        <div class="user-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="user-email" id="user-email">user@example.com</div>
+                    </div>
+                    
+                    <h3 class="section-title">Settings</h3>
+                    
+                    <div class="settings-option" id="search-btn">
+                        <div class="option-icon">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <div class="option-text">Search Entries</div>
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                    
+                    <div class="settings-option" id="filter-btn">
+                        <div class="option-icon">
+                            <i class="fas fa-filter"></i>
+                        </div>
+                        <div class="option-text">Filter by Mood</div>
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                    
+                    <div class="settings-option" id="export-btn">
+                        <div class="option-icon">
+                            <i class="fas fa-file-export"></i>
+                        </div>
+                        <div class="option-text">Export Data</div>
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                    
+                    <div class="settings-option">
+                        <div class="option-icon">
+                            <i class="fas fa-palette"></i>
+                        </div>
+                        <div class="option-text">Theme</div>
+                        <label class="theme-toggle">
+                            <input type="checkbox" id="theme-switch">
+                            <span class="theme-slider"></span>
+                        </label>
+                    </div>
+                    
+                    <button class="btn-submit" id="logout-btn" style="margin-top: 30px;">Log Out</button>
+                </div>
+            </div>
+            
+            <!-- Floating Action Button -->
+            <div class="fab" id="fab-btn">
+                <i class="fas fa-plus"></i>
+            </div>
+            
+            <!-- Bottom Navigation -->
+            <nav class="bottom-nav">
+                <div class="nav-item active" data-page="timeline-page">
+                    <i class="fas fa-home"></i>
+                    <span>Home</span>
+                </div>
+                <div class="nav-item" data-page="add-entry-page">
+                    <i class="fas fa-plus"></i>
+                    <span>Add</span>
+                </div>
+                <div class="nav-item" data-page="profile-page">
+                    <i class="fas fa-user"></i>
+                    <span>Profile</span>
+                </div>
+            </nav>
+        </div>
+        
+        <!-- Loading Overlay -->
+        <div class="loading" id="loading" style="display: none;">
+            <div class="spinner"></div>
+        </div>
+        
+        <!-- Toast Message -->
+        <div class="toast" id="toast">Entry added successfully!</div>
     </div>
 
-    <!-- Timeline Page -->
-    <section id="timeline-page" class="page show">
-      <header>
-        <div class="calendar-bar">
-          <input type="date" id="date-picker" />
-          <button id="refresh-btn" title="Refresh">⟳</button>
-        </div>
-        <h1>Your Digital Flow</h1>
-      </header>
-      <div id="timeline-list" class="timeline-list">
-        <!-- Entries will be injected here -->
-      </div>
-      <div id="timeline-loading" class="loading">Loading...</div>
-      <div id="timeline-empty" class="empty">No entries for this date.</div>
-    </section>
-
-    <!-- Add Entry Page (Slide-up) -->
-    <section id="add-entry-page" class="page modal">
-      <div class="modal-content slide-up">
-        <h2>New Entry</h2>
-        <form id="entry-form">
-          <input type="text" id="entry-title" placeholder="Title" maxlength="40" required />
-          <textarea id="entry-description" placeholder="Description" maxlength="500" required></textarea>
-          <div class="form-row">
-            <label>Time</label>
-            <input type="time" id="entry-time" required />
-          </div>
-          <div class="form-row">
-            <label>Mood</label>
-            <div id="mood-selector" class="mood-selector">
-              <button type="button" data-mood="😊 Happy">😊</button>
-              <button type="button" data-mood="😐 Neutral">😐</button>
-              <button type="button" data-mood="😢 Sad">😢</button>
-              <button type="button" data-mood="😠 Angry">😠</button>
-              <button type="button" data-mood="🤩 Excited">🤩</button>
-            </div>
-          </div>
-          <div class="form-row">
-            <label>Tags</label>
-            <input type="text" id="entry-tags" placeholder="#wellness, #work" />
-          </div>
-          <div class="form-actions">
-            <button type="submit" class="fab">Add Entry</button>
-            <button type="button" id="close-add-entry">Cancel</button>
-          </div>
-        </form>
-        <p id="entry-error" class="error"></p>
-      </div>
-    </section>
-
-    <!-- Profile/Settings Page -->
-    <section id="profile-page" class="page">
-      <header>
-        <h2>Profile & Settings</h2>
-      </header>
-      <div class="profile-info">
-        <div id="user-email"></div>
-        <button id="logout-btn">Logout</button>
-      </div>
-      <div class="settings">
-        <div class="search-bar">
-          <input type="text" id="search-input" placeholder="Search entries..." />
-        </div>
-        <div class="filter-bar">
-          <select id="filter-mood">
-            <option value="">All Moods</option>
-            <option value="😊 Happy">😊 Happy</option>
-            <option value="😐 Neutral">😐 Neutral</option>
-            <option value="😢 Sad">😢 Sad</option>
-            <option value="😠 Angry">😠 Angry</option>
-            <option value="🤩 Excited">🤩 Excited</option>
-          </select>
-          <input type="text" id="filter-tag" placeholder="Filter by tag..." />
-        </div>
-        <div class="export-bar">
-          <button id="export-json">Export JSON</button>
-          <button id="export-txt">Export TXT</button>
-        </div>
-        <div class="theme-toggle">
-          <label>Theme</label>
-          <button id="theme-toggle-btn">🌙</button>
-        </div>
-      </div>
-      <div id="profile-entries" class="timeline-list"></div>
-    </section>
-
-    <!-- Bottom Navigation Bar -->
-    <nav class="bottom-nav">
-      <button class="nav-btn" data-page="timeline-page">
-        <span>🏠</span>
-        <span class="nav-label">Timeline</span>
-      </button>
-      <button class="nav-btn fab" id="open-add-entry">
-        <span>＋</span>
-      </button>
-      <button class="nav-btn" data-page="profile-page">
-        <span>👤</span>
-        <span class="nav-label">Profile</span>
-      </button>
-    </nav>
-  </div>
-  <script src="app.js"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    
+    <!-- Main JavaScript -->
+    <script src="app.js"></script>
 </body>
 </html>
