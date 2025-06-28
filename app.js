@@ -319,6 +319,66 @@ refreshBtn.addEventListener('click', () => {
     loadEntries();
 });
 
+// Add glass class to main containers on DOMContentLoaded
+window.addEventListener('DOMContentLoaded', () => {
+    // Header
+    document.querySelector('.app-header')?.classList.add('glass');
+    // Date selector
+    document.querySelector('.date-selector')?.classList.add('glass');
+    // Timeline container
+    document.querySelector('.timeline-container')?.classList.add('glass');
+    // Add-entry container
+    document.querySelector('.add-entry-container')?.classList.add('glass');
+    // Login form
+    document.querySelector('.login-form')?.classList.add('glass');
+    // Settings options
+    document.querySelectorAll('.settings-option').forEach(el => el.classList.add('glass'));
+});
+
+// Calendar icon click: open date picker and update timeline
+const calendarIcon = document.querySelector('.calendar-icon');
+if (calendarIcon) {
+    calendarIcon.style.cursor = 'pointer';
+    calendarIcon.addEventListener('click', () => {
+        // Create a hidden input[type=date]
+        let dateInput = document.getElementById('hidden-date-input');
+        if (!dateInput) {
+            dateInput = document.createElement('input');
+            dateInput.type = 'date';
+            dateInput.id = 'hidden-date-input';
+            dateInput.style.display = 'none';
+            document.body.appendChild(dateInput);
+        }
+        dateInput.value = new Date().toISOString().split('T')[0];
+        dateInput.onchange = function() {
+            // Update current date display and reload entries for selected date
+            const selectedDate = new Date(this.value);
+            currentDateEl.textContent = formatDate(selectedDate);
+            loadEntries(this.value);
+        };
+        dateInput.click();
+    });
+}
+
+// Update loadEntries to accept a date string
+function loadEntries(dateStr) {
+    if (!currentUser) return;
+    const dateToLoad = dateStr || new Date().toISOString().split('T')[0];
+    entriesContainer.innerHTML = '<div class="pull-to-refresh">Loading entries...</div>';
+    const entriesRef = database.ref(`users/${currentUser.uid}/entries/${dateToLoad}`);
+    entriesRef.once('value')
+        .then((snapshot) => {
+            const entries = snapshot.val();
+            renderEntries(entries);
+            hideLoading();
+        })
+        .catch((error) => {
+            hideLoading();
+            showToast('Error loading entries: ' + error.message);
+            entriesContainer.innerHTML = '<div class="pull-to-refresh">Error loading entries. Pull to refresh.</div>';
+        });
+}
+
 // Load entries from Firebase
 function loadEntries() {
     if (!currentUser) return;
