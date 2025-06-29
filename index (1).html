@@ -1,0 +1,2005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=0.3, maximum-scale=0.3">
+    <title>Modern Diary App | Glass UI</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3a56d4;
+            --secondary: #7209b7;
+            --accent: #4cc9f0;
+            --light: rgba(255, 255, 255, 0.9);
+            --dark: #212529;
+            --darker: #12181b;
+            --gray: rgba(108, 117, 125, 0.7);
+            --light-gray: rgba(233, 236, 239, 0.4);
+            --card-bg: rgba(255, 255, 255, 0.15);
+            --card-border: rgba(224, 224, 224, 0.2);
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            --shadow-hover: 0 8px 32px rgba(67, 97, 238, 0.2);
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --glass-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0));
+            --glass-border: 1px solid rgba(255, 255, 255, 0.18);
+            --glass-effect: backdrop-filter: blur(12px) saturate(180%);
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 0 0 80px;
+            color: white;
+            overflow-x: hidden;
+            background-attachment: fixed;
+            background-size: cover;
+            zoom: 0.7;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        /* Glass effect styling */
+        .glass {
+            background: var(--glass-bg);
+            border: var(--glass-border);
+            box-shadow: var(--shadow);
+            border-radius: 20px;
+            backdrop-filter: blur(12px) saturate(180%);
+            -webkit-backdrop-filter: blur(12px) saturate(180%);
+        }
+
+        .app-header {
+            text-align: center;
+            padding: 20px 0;
+            position: relative;
+            background: linear-gradient(90deg, rgba(67, 97, 238, 0.4), rgba(114, 9, 183, 0.4));
+            color: white;
+            border-radius: 0 0 20px 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .app-header h1 {
+            font-size: 2rem;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .app-header p {
+            font-size: 1rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+
+        /* Auth Container */
+        .auth-container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+            max-width: 450px;
+            margin: 50px auto;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .auth-title {
+            text-align: center;
+            margin-bottom: 25px;
+            color: white;
+            font-size: 1.8rem;
+            font-weight: 600;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .auth-toggle {
+            display: flex;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .toggle-btn {
+            flex: 1;
+            padding: 14px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .toggle-btn.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 0 15px rgba(67, 97, 238, 0.4);
+        }
+
+        .auth-form {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .auth-form.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: white;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+        }
+
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .form-control:focus {
+            border-color: white;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 15px rgba(67, 97, 238, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(67, 97, 238, 0.5);
+        }
+
+        .btn-google {
+            background: white;
+            color: #4285F4;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+
+        .btn-google:hover {
+            background: #f8f9fa;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+
+        .form-footer {
+            text-align: center;
+            margin-top: 20px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+        }
+
+        .form-footer a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .form-footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-around;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            padding: 10px;
+            border-radius: 50px;
+            width: 90%;
+            max-width: 400px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 15px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.8rem;
+            width: 25%;
+        }
+
+        .nav-item.active {
+            color: white;
+            background: rgba(67, 97, 238, 0.3);
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+        }
+
+        .nav-item i {
+            font-size: 1.4rem;
+            margin-bottom: 5px;
+        }
+
+        /* Tab Content */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Timeline Tab */
+        .timeline-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .timeline-header h2 {
+            color: white;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .date-picker-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .date-display {
+            font-weight: 600;
+            color: white;
+            background: rgba(67, 97, 238, 0.3);
+            padding: 10px 20px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .date-nav-btn {
+            background: rgba(67, 97, 238, 0.4);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .date-nav-btn:hover {
+            background: var(--primary);
+            transform: scale(1.1);
+        }
+
+        .calendar-picker {
+            background: rgba(114, 9, 183, 0.4);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .calendar-picker:hover {
+            background: var(--secondary);
+            transform: translateY(-3px);
+        }
+
+        .timeline {
+            position: relative;
+            padding-bottom: 50px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 30px;
+            width: 4px;
+            background: var(--accent);
+            border-radius: 2px;
+            background: linear-gradient(to bottom, #4361ee, #4cc9f0, #7209b7);
+        }
+
+        .entry-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: var(--shadow);
+            position: relative;
+            margin-left: 60px;
+            transition: transform 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .entry-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+        }
+
+        .entry-card::before {
+            content: '';
+            position: absolute;
+            top: 24px;
+            left: -40px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--accent);
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 0 2px var(--accent);
+        }
+
+        .entry-time {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.85rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .time-detail {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(76, 201, 240, 0.2);
+            padding: 6px 12px;
+            border-radius: 50px;
+            margin-right: 8px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .entry-meta {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(67, 97, 238, 0.2);
+            padding: 6px 15px;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .entry-content {
+            font-size: 1.05rem;
+            line-height: 1.6;
+            color: white;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px dashed rgba(255, 255, 255, 0.2);
+        }
+
+        .entry-tags {
+            display: flex;
+            gap: 8px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            background: rgba(114, 9, 183, 0.2);
+            color: white;
+            padding: 6px 15px;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .no-entries {
+            text-align: center;
+            padding: 50px 20px;
+            color: rgba(255, 255, 255, 0.7);
+            font-style: italic;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        /* Add Entry Tab */
+        .entry-form {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .entry-form textarea {
+            min-height: 180px;
+            resize: vertical;
+        }
+
+        .entry-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .entry-extra {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .entry-details input,
+        .entry-extra input,
+        .entry-extra select {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Profile Tab */
+        .profile-container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .profile-header {
+            text-align: center;
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid var(--primary);
+            margin: 0 auto 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .profile-avatar:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(67, 97, 238, 0.4);
+        }
+
+        .profile-name {
+            font-size: 1.7rem;
+            color: white;
+            margin-bottom: 5px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .profile-email {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.1rem;
+        }
+
+        .profile-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        .stat-card {
+            background: rgba(67, 97, 238, 0.15);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            background: rgba(67, 97, 238, 0.25);
+            box-shadow: 0 8px 20px rgba(67, 97, 238, 0.2);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .stat-label {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.95rem;
+        }
+
+        .profile-actions {
+            margin-top: 30px;
+        }
+
+        .action-btn {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1.1rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(5px);
+        }
+
+        .edit-profile {
+            background: rgba(67, 97, 238, 0.4);
+            color: white;
+            box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+        }
+
+        .edit-profile:hover {
+            background: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(67, 97, 238, 0.4);
+        }
+
+        .logout {
+            background: rgba(231, 76, 60, 0.4);
+            color: white;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+        }
+
+        .logout:hover {
+            background: var(--danger);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+        }
+
+        /* Toast notifications */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 12px;
+            background: rgba(67, 97, 238, 0.9);
+            color: white;
+            box-shadow: var(--shadow);
+            transform: translateX(200%);
+            transition: transform 0.3s;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.error {
+            background: rgba(231, 76, 60, 0.9);
+        }
+
+        /* Loading spinner */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Calendar Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: modalFade 0.3s;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        @keyframes modalFade {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .modal-header {
+            padding: 20px;
+            background: rgba(67, 97, 238, 0.4);
+            color: white;
+            border-radius: 20px 20px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .close-modal {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 1.8rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .close-modal:hover {
+            transform: scale(1.1);
+        }
+
+        .modal-body {
+            padding: 25px;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+        }
+
+        .calendar-day {
+            padding: 12px;
+            text-align: center;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .calendar-day:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-3px);
+        }
+
+        .calendar-day.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 10px rgba(67, 97, 238, 0.4);
+        }
+
+        .calendar-day.has-entry {
+            background: rgba(76, 201, 240, 0.3);
+        }
+
+        .calendar-header {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: white;
+        }
+
+        .calendar-nav {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .calendar-nav-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 10px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: white;
+            font-weight: 600;
+        }
+
+        .calendar-nav-btn:hover {
+            background: var(--primary);
+            transform: translateY(-3px);
+        }
+
+        /* Floating particles for background */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+            animation: float 15s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0) translateX(0) rotate(0deg); }
+            100% { transform: translateY(-100vh) translateX(100px) rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .app-header h1 {
+                font-size: 1.6rem;
+            }
+            
+            .auth-container {
+                padding: 25px 15px;
+            }
+            
+            .entry-card {
+                margin-left: 40px;
+            }
+            
+            .timeline::before {
+                left: 20px;
+            }
+            
+            .entry-card::before {
+                left: -30px;
+            }
+            
+            .entry-details, .entry-extra {
+                grid-template-columns: 1fr;
+            }
+            
+            .profile-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .date-display span {
+                font-size: 0.9rem;
+            }
+            
+            .timeline-header {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .date-picker-container {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .calendar-picker {
+                margin-top: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating particles for background effect -->
+    <div class="particles" id="particles"></div>
+    
+    <div class="container">
+        <!-- Auth Screen -->
+        <div id="auth-screen">
+            <div class="app-header">
+                <h1><i class="fas fa-book"></i> Modern Diary App</h1>
+                <p>Beautiful Glass UI with Smooth Animations</p>
+            </div>
+            
+            <div class="auth-container glass">
+                <div class="auth-toggle">
+                    <div class="toggle-btn active" id="login-toggle">Login</div>
+                    <div class="toggle-btn" id="register-toggle">Register</div>
+                </div>
+                
+                <!-- Login Form -->
+                <div id="login-form" class="auth-form active">
+                    <h2 class="auth-title">Sign in to your diary</h2>
+                    <div class="form-group">
+                        <label for="email"><i class="fas fa-envelope"></i> Email</label>
+                        <input type="email" id="email" class="form-control" placeholder="Enter your email">
+                    </div>
+                    <div class="form-group">
+                        <label for="password"><i class="fas fa-lock"></i> Password</label>
+                        <input type="password" id="password" class="form-control" placeholder="Enter your password">
+                    </div>
+                    <button id="login-btn" class="btn btn-primary">
+                        <span class="btn-text">Sign In</span>
+                    </button>
+                    
+                    <div class="form-footer">
+                        Don't have an account? <a id="show-register">Register now</a>
+                    </div>
+                    
+                    <div class="divider">or continue with</div>
+                    
+                    <button id="google-login-btn" class="btn btn-google">
+                        <i class="fab fa-google"></i> Sign in with Google
+                    </button>
+                </div>
+                
+                <!-- Register Form -->
+                <div id="register-form" class="auth-form">
+                    <h2 class="auth-title">Create an account</h2>
+                    <div class="form-group">
+                        <label for="register-name"><i class="fas fa-user"></i> Full Name</label>
+                        <input type="text" id="register-name" class="form-control" placeholder="Enter your full name">
+                    </div>
+                    <div class="form-group">
+                        <label for="register-email"><i class="fas fa-envelope"></i> Email</label>
+                        <input type="email" id="register-email" class="form-control" placeholder="Enter your email">
+                    </div>
+                    <div class="form-group">
+                        <label for="register-password"><i class="fas fa-lock"></i> Password</label>
+                        <input type="password" id="register-password" class="form-control" placeholder="Create a password (min 6 chars)">
+                    </div>
+                    <div class="form-group">
+                        <label for="register-confirm"><i class="fas fa-lock"></i> Confirm Password</label>
+                        <input type="password" id="register-confirm" class="form-control" placeholder="Confirm your password">
+                    </div>
+                    <button id="register-btn" class="btn btn-primary">
+                        <span class="btn-text">Create Account</span>
+                    </button>
+                    
+                    <div class="form-footer">
+                        Already have an account? <a id="show-login">Sign in</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- App Content (Hidden until login) -->
+        <div id="app-content" style="display:none">
+            <div class="app-header">
+                <h1><i class="fas fa-book-open"></i> My Personal Diary</h1>
+                <p>Your thoughts, beautifully preserved</p>
+            </div>
+            
+            <!-- Timeline Tab -->
+            <div id="timeline-tab" class="tab-content active">
+                <div class="timeline-header glass">
+                    <h2><i class="fas fa-calendar-day"></i> Timeline</h2>
+                    <div class="date-picker-container">
+                        <div class="date-nav-btn" id="prev-date">
+                            <i class="fas fa-chevron-left"></i>
+                        </div>
+                        <div class="date-display" id="current-date">
+                            <i class="far fa-calendar"></i> 
+                            <span id="current-date-text">Loading...</span>
+                        </div>
+                        <div class="date-nav-btn" id="next-date">
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
+                        <div class="calendar-picker" id="open-calendar">
+                            <i class="fas fa-calendar-alt"></i> Calendar
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="timeline">
+                    <div class="no-entries glass" id="no-entries">
+                        <i class="fas fa-edit fa-3x" style="color: white; margin-bottom: 20px;"></i>
+                        <h3>No entries for this date</h3>
+                        <p>Write your first diary entry to get started</p>
+                    </div>
+                    
+                    <!-- Entry cards will be dynamically added here -->
+                </div>
+            </div>
+            
+            <!-- Add Entry Tab -->
+            <div id="add-entry-tab" class="tab-content">
+                <div class="entry-form glass">
+                    <div class="form-group">
+                        <label for="new-entry"><i class="fas fa-pencil-alt"></i> Diary Entry</label>
+                        <textarea id="new-entry" class="form-control" placeholder="What's on your mind today?"></textarea>
+                    </div>
+                    <div class="entry-details">
+                        <div class="form-group">
+                            <label for="entry-date"><i class="far fa-calendar"></i> Date</label>
+                            <input type="date" id="entry-date" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="entry-time"><i class="far fa-clock"></i> Time</label>
+                            <input type="time" id="entry-time" class="form-control">
+                        </div>
+                    </div>
+                    <div class="entry-extra">
+                        <div class="form-group">
+                            <label for="entry-mood"><i class="fas fa-smile"></i> Mood</label>
+                            <select id="entry-mood" class="form-control">
+                                <option value="">Select Mood</option>
+                                <option value="😊 Happy">😊 Happy</option>
+                                <option value="😢 Sad">😢 Sad</option>
+                                <option value="😠 Angry">😠 Angry</option>
+                                <option value="😐 Neutral">😐 Neutral</option>
+                                <option value="😲 Surprised">😲 Surprised</option>
+                                <option value="😴 Tired">😴 Tired</option>
+                                <option value="😍 Excited">😍 Excited</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="entry-weather"><i class="fas fa-cloud-sun"></i> Weather</label>
+                            <select id="entry-weather" class="form-control">
+                                <option value="">Select Weather</option>
+                                <option value="☀️ Sunny">☀️ Sunny</option>
+                                <option value="🌧️ Rainy">🌧️ Rainy</option>
+                                <option value="⛅ Cloudy">⛅ Cloudy</option>
+                                <option value="❄️ Snowy">❄️ Snowy</option>
+                                <option value="🌪️ Windy">🌪️ Windy</option>
+                                <option value="🌩️ Stormy">🌩️ Stormy</option>
+                                <option value="🌈 Clear">🌈 Clear</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="entry-tags"><i class="fas fa-tags"></i> Tags (comma separated)</label>
+                        <input type="text" id="entry-tags" class="form-control" placeholder="e.g., work, family, vacation">
+                    </div>
+                    <button id="add-entry-btn" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> <span class="btn-text">Add Entry</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Profile Tab -->
+            <div id="profile-tab" class="tab-content">
+                <div class="profile-container glass">
+                    <div class="profile-header">
+                        <img id="profile-avatar" class="profile-avatar" src="https://ui-avatars.com/api/?name=User&background=random" alt="Profile">
+                        <input type="file" id="avatar-upload" accept="image/*" style="display: none;">
+                        <h2 class="profile-name" id="profile-name">User Name</h2>
+                        <p class="profile-email" id="profile-email">user@example.com</p>
+                    </div>
+                    
+                    <div class="profile-stats">
+                        <div class="stat-card">
+                            <div class="stat-number" id="entries-count">0</div>
+                            <div class="stat-label">Entries</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="streak-count">0</div>
+                            <div class="stat-label">Day Streak</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="since-count">0</div>
+                            <div class="stat-label">Days Since</div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="display-name"><i class="fas fa-user"></i> Display Name</label>
+                        <input type="text" id="display-name" class="form-control" placeholder="Enter your name">
+                    </div>
+                    
+                    <div class="profile-actions">
+                        <button id="save-profile-btn" class="action-btn edit-profile">
+                            <i class="fas fa-save"></i> Save Profile
+                        </button>
+                        <button id="logout-btn" class="action-btn logout">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bottom Navigation -->
+            <div class="bottom-nav glass">
+                <div class="nav-item active" data-tab="timeline-tab">
+                    <i class="fas fa-home"></i>
+                    <span>Timeline</span>
+                </div>
+                <div class="nav-item" data-tab="add-entry-tab">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>Add Entry</span>
+                </div>
+                <div class="nav-item" data-tab="profile-tab">
+                    <i class="fas fa-user"></i>
+                    <span>Profile</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Toast Notification -->
+        <div id="toast" class="toast"></div>
+        
+        <!-- Calendar Modal -->
+        <div id="calendar-modal" class="modal">
+            <div class="modal-content glass">
+                <div class="modal-header">
+                    <h2><i class="fas fa-calendar-alt"></i> Select Date</h2>
+                    <button class="close-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="calendar-nav">
+                        <button id="prev-month" class="calendar-nav-btn"><i class="fas fa-chevron-left"></i> Prev</button>
+                        <h3 id="calendar-month">July 2023</h3>
+                        <button id="next-month" class="calendar-nav-btn">Next <i class="fas fa-chevron-right"></i></button>
+                    </div>
+                    <div class="calendar-header">
+                        <div>Sun</div>
+                        <div>Mon</div>
+                        <div>Tue</div>
+                        <div>Wed</div>
+                        <div>Thu</div>
+                        <div>Fri</div>
+                        <div>Sat</div>
+                    </div>
+                    <div class="calendar-grid" id="calendar-grid">
+                        <!-- Calendar days will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAmNCg2Pq8VX2Nu3LdILTDK3M_P3e7DuNU",
+            authDomain: "portofoliomghacker-main.firebaseapp.com",
+            databaseURL: "https://portofoliomghacker-main-default-rtdb.firebaseio.com",
+            projectId: "portofoliomghacker-main",
+            storageBucket: "portofoliomghacker-main.firebasestorage.app",
+            messagingSenderId: "68077005880",
+            appId: "1:68077005880:web:eb15f21bc1a062b6aa0acd"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+
+        // DOM Elements
+        const authScreen = document.getElementById('auth-screen');
+        const appContent = document.getElementById('app-content');
+        const timelineTab = document.getElementById('timeline-tab');
+        const addEntryTab = document.getElementById('add-entry-tab');
+        const profileTab = document.getElementById('profile-tab');
+        const navItems = document.querySelectorAll('.nav-item');
+        const currentDateEl = document.getElementById('current-date');
+        const currentDateText = document.getElementById('current-date-text');
+        const prevDateBtn = document.getElementById('prev-date');
+        const nextDateBtn = document.getElementById('next-date');
+        const newEntryInput = document.getElementById('new-entry');
+        const entryDateInput = document.getElementById('entry-date');
+        const entryTimeInput = document.getElementById('entry-time');
+        const entryMoodInput = document.getElementById('entry-mood');
+        const entryWeatherInput = document.getElementById('entry-weather');
+        const entryTagsInput = document.getElementById('entry-tags');
+        const addEntryBtn = document.getElementById('add-entry-btn');
+        const timeline = document.querySelector('.timeline');
+        const noEntries = document.getElementById('no-entries');
+        const toast = document.getElementById('toast');
+        const loginBtn = document.getElementById('login-btn');
+        const registerBtn = document.getElementById('register-btn');
+        const googleLoginBtn = document.getElementById('google-login-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const registerNameInput = document.getElementById('register-name');
+        const registerEmailInput = document.getElementById('register-email');
+        const registerPasswordInput = document.getElementById('register-password');
+        const registerConfirmInput = document.getElementById('register-confirm');
+        const profileAvatar = document.getElementById('profile-avatar');
+        const profileName = document.getElementById('profile-name');
+        const profileEmail = document.getElementById('profile-email');
+        const entriesCount = document.getElementById('entries-count');
+        const streakCount = document.getElementById('streak-count');
+        const sinceCount = document.getElementById('since-count');
+        const displayNameInput = document.getElementById('display-name');
+        const saveProfileBtn = document.getElementById('save-profile-btn');
+        const avatarUpload = document.getElementById('avatar-upload');
+        const openCalendarBtn = document.getElementById('open-calendar');
+        const calendarModal = document.getElementById('calendar-modal');
+        const closeModalBtn = document.querySelector('.close-modal');
+        const calendarGrid = document.getElementById('calendar-grid');
+        const calendarMonthEl = document.getElementById('calendar-month');
+        const prevMonthBtn = document.getElementById('prev-month');
+        const nextMonthBtn = document.getElementById('next-month');
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        const loginToggle = document.getElementById('login-toggle');
+        const registerToggle = document.getElementById('register-toggle');
+        const showLogin = document.getElementById('show-login');
+        const showRegister = document.getElementById('show-register');
+        const particlesContainer = document.getElementById('particles');
+
+        // Set India/Kolkata timezone (UTC+5:30)
+        const IST_OFFSET = 5.5 * 60 * 60 * 1000;
+        
+        // Get current date with IST offset
+        function getCurrentISTDate() {
+            const now = new Date();
+            return new Date(now.getTime() + IST_OFFSET);
+        }
+        
+        // Format dates for display in IST
+        function formatDateIST(date) {
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                timeZone: 'Asia/Kolkata'
+            };
+            return date.toLocaleDateString('en-IN', options);
+        }
+        
+        // Format date for input fields in IST
+        function formatDateForInputIST(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+        
+        // Format time for input fields in IST
+        function formatTimeForInputIST(date) {
+            return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+        }
+        
+        // Get start of day in IST (UTC timestamp)
+        function getStartOfDayIST(date) {
+            const d = new Date(date);
+            d.setHours(0, 0, 0, 0);
+            return d.getTime();
+        }
+        
+        // Get end of day in IST (UTC timestamp)
+        function getEndOfDayIST(date) {
+            const d = new Date(date);
+            d.setHours(23, 59, 59, 999);
+            return d.getTime();
+        }
+        
+        // Initialize with current IST date
+        const nowIST = getCurrentISTDate();
+        const todayIST = new Date(nowIST.getFullYear(), nowIST.getMonth(), nowIST.getDate());
+        let currentViewDate = todayIST;
+        let userEntries = [];
+        let currentCalendarMonth = nowIST.getMonth();
+        let currentCalendarYear = nowIST.getFullYear();
+        
+        // Set initial dates
+        entryDateInput.value = formatDateForInputIST(nowIST);
+        entryTimeInput.value = formatTimeForInputIST(nowIST);
+        currentDateText.textContent = formatDateIST(currentViewDate);
+
+        // Create floating particles for background
+        function createParticles() {
+            const particleCount = 30;
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                
+                // Random size
+                const size = Math.random() * 30 + 10;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                
+                // Random position
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.top = `${Math.random() * 100}%`;
+                
+                // Random animation duration
+                particle.style.animationDuration = `${Math.random() * 20 + 10}s`;
+                
+                // Random color
+                const colors = ['rgba(67, 97, 238, 0.3)', 'rgba(114, 9, 183, 0.3)', 'rgba(76, 201, 240, 0.3)'];
+                particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // Auth form toggle
+        function showLoginForm() {
+            loginForm.classList.add('active');
+            registerForm.classList.remove('active');
+            loginToggle.classList.add('active');
+            registerToggle.classList.remove('active');
+        }
+
+        function showRegisterForm() {
+            registerForm.classList.add('active');
+            loginForm.classList.remove('active');
+            registerToggle.classList.add('active');
+            loginToggle.classList.remove('active');
+        }
+
+        // Add event listeners for toggling
+        loginToggle.addEventListener('click', showLoginForm);
+        registerToggle.addEventListener('click', showRegisterForm);
+        showLogin.addEventListener('click', showLoginForm);
+        showRegister.addEventListener('click', showRegisterForm);
+
+        // Navigation functionality
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                // Remove active class from all items
+                navItems.forEach(i => i.classList.remove('active'));
+                
+                // Add active class to clicked item
+                item.classList.add('active');
+                
+                // Hide all tabs
+                timelineTab.classList.remove('active');
+                addEntryTab.classList.remove('active');
+                profileTab.classList.remove('active');
+                
+                // Show the selected tab
+                const tabId = item.getAttribute('data-tab');
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+        
+        // Date navigation
+        prevDateBtn.addEventListener('click', () => {
+            currentViewDate = new Date(currentViewDate);
+            currentViewDate.setDate(currentViewDate.getDate() - 1);
+            currentDateText.textContent = formatDateIST(currentViewDate);
+            filterEntriesByDate(currentViewDate);
+        });
+        
+        nextDateBtn.addEventListener('click', () => {
+            currentViewDate = new Date(currentViewDate);
+            currentViewDate.setDate(currentViewDate.getDate() + 1);
+            currentDateText.textContent = formatDateIST(currentViewDate);
+            filterEntriesByDate(currentViewDate);
+        });
+        
+        // Filter entries by date (IST)
+        function filterEntriesByDate(date) {
+            const start = getStartOfDayIST(date);
+            const end = getEndOfDayIST(date);
+            
+            const entries = document.querySelectorAll('.entry-card');
+            let hasEntries = false;
+            
+            entries.forEach(entry => {
+                const timestamp = parseInt(entry.getAttribute('data-timestamp'));
+                if (timestamp >= start && timestamp <= end) {
+                    entry.style.display = 'block';
+                    hasEntries = true;
+                } else {
+                    entry.style.display = 'none';
+                }
+            });
+            
+            noEntries.style.display = hasEntries ? 'none' : 'block';
+        }
+        
+        // Show toast notification
+        function showToast(message, isError = false) {
+            toast.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i> ${message}`;
+            toast.className = `toast ${isError ? 'error' : ''} show`;
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Toggle button loading state
+        function toggleButtonLoading(button, isLoading) {
+            const buttonText = button.querySelector('.btn-text');
+            if (isLoading) {
+                button.disabled = true;
+                if (button === loginBtn || button === registerBtn) {
+                    button.innerHTML = '<span class="spinner"></span> Processing...';
+                } else if (button === addEntryBtn) {
+                    button.innerHTML = '<span class="spinner"></span> Adding...';
+                } else if (button === saveProfileBtn) {
+                    button.innerHTML = '<span class="spinner"></span> Saving...';
+                }
+            } else {
+                button.disabled = false;
+                if (button === loginBtn) {
+                    button.innerHTML = '<span class="btn-text">Sign In</span>';
+                } else if (button === registerBtn) {
+                    button.innerHTML = '<span class="btn-text">Create Account</span>';
+                } else if (button === addEntryBtn) {
+                    button.innerHTML = '<i class="fas fa-plus"></i> <span class="btn-text">Add Entry</span>';
+                } else if (button === saveProfileBtn) {
+                    button.innerHTML = '<i class="fas fa-save"></i> <span class="btn-text">Save Profile</span>';
+                }
+            }
+        }
+
+        // Format timestamp with detailed information (IST)
+        function formatTimestampIST(timestamp) {
+            const date = new Date(timestamp);
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                timeZone: 'Asia/Kolkata'
+            };
+            return date.toLocaleDateString('en-IN', options);
+        }
+
+        // Format time details for entry card (IST)
+        function formatTimeDetailsIST(timestamp) {
+            const date = new Date(timestamp);
+            const options = { timeZone: 'Asia/Kolkata' };
+            const timeString = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', ...options});
+            const dayOfWeek = date.toLocaleDateString([], {weekday: 'long', ...options});
+            const dateString = date.toLocaleDateString([], {month: 'short', day: 'numeric', year: 'numeric', ...options});
+            
+            return {
+                time: timeString,
+                date: dateString,
+                weekday: dayOfWeek,
+                fullDate: formatTimestampIST(timestamp)
+            };
+        }
+
+        // Create entry card
+        function createEntryCard(entry) {
+            const card = document.createElement('div');
+            card.className = 'entry-card glass';
+            card.setAttribute('data-timestamp', entry.timestamp);
+            
+            const timeDetails = formatTimeDetailsIST(entry.timestamp);
+            
+            const time = document.createElement('div');
+            time.className = 'entry-time';
+            time.innerHTML = `
+                <div class="time-detail"><i class="far fa-calendar"></i> ${timeDetails.date}</div>
+                <div class="time-detail"><i class="far fa-clock"></i> ${timeDetails.time}</div>
+                <div class="time-detail"><i class="far fa-calendar-check"></i> ${timeDetails.weekday}</div>
+            `;
+            
+            const meta = document.createElement('div');
+            meta.className = 'entry-meta';
+            
+            if (entry.mood) {
+                meta.innerHTML += `<div class="meta-item">${entry.mood}</div>`;
+            }
+            
+            if (entry.weather) {
+                meta.innerHTML += `<div class="meta-item">${entry.weather}</div>`;
+            }
+            
+            const content = document.createElement('div');
+            content.className = 'entry-content';
+            content.textContent = entry.content;
+            
+            card.appendChild(time);
+            card.appendChild(meta);
+            card.appendChild(content);
+            
+            if (entry.tags) {
+                const tags = document.createElement('div');
+                tags.className = 'entry-tags';
+                
+                entry.tags.split(',').forEach(tag => {
+                    if (tag.trim()) {
+                        tags.innerHTML += `<div class="tag">#${tag.trim()}</div>`;
+                    }
+                });
+                
+                card.appendChild(tags);
+            }
+            
+            return card;
+        }
+
+        // Render entries to timeline
+        function renderEntries(entries) {
+            timeline.innerHTML = '';
+            
+            if (!entries || Object.keys(entries).length === 0) {
+                noEntries.style.display = 'block';
+                timeline.appendChild(noEntries);
+                entriesCount.textContent = "0";
+                streakCount.textContent = "0";
+                sinceCount.textContent = "0";
+                return;
+            }
+            
+            noEntries.style.display = 'none';
+            
+            // Sort entries by timestamp (newest first)
+            const sortedEntries = Object.entries(entries)
+                .map(([key, value]) => ({ id: key, ...value }))
+                .sort((a, b) => b.timestamp - a.timestamp);
+            
+            userEntries = sortedEntries;
+            
+            sortedEntries.forEach(entry => {
+                const card = createEntryCard(entry);
+                timeline.appendChild(card);
+            });
+            
+            // Update stats
+            entriesCount.textContent = sortedEntries.length;
+            
+            // Calculate streak and days since first entry
+            if (sortedEntries.length > 0) {
+                // Calculate streak
+                let streak = 0;
+                let currentDate = new Date();
+                const entryDates = new Set();
+                
+                sortedEntries.forEach(entry => {
+                    const entryDate = new Date(entry.timestamp);
+                    const dateKey = formatDateForInputIST(entryDate);
+                    entryDates.add(dateKey);
+                });
+                
+                // Check consecutive days
+                while (entryDates.has(formatDateForInputIST(currentDate))) {
+                    streak++;
+                    const prevDate = new Date(currentDate);
+                    prevDate.setDate(prevDate.getDate() - 1);
+                    currentDate = prevDate;
+                }
+                
+                streakCount.textContent = streak;
+                
+                // Calculate days since first entry
+                const firstEntryDate = new Date(sortedEntries[sortedEntries.length - 1].timestamp);
+                const today = new Date();
+                const diffTime = Math.abs(today - firstEntryDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+                sinceCount.textContent = diffDays;
+            } else {
+                streakCount.textContent = "0";
+                sinceCount.textContent = "0";
+            }
+            
+            // Filter for current date
+            filterEntriesByDate(currentViewDate);
+        }
+        
+        // Update user profile display
+        function updateProfileDisplay(user) {
+            const displayName = user.displayName || 'User';
+            const photoURL = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=random`;
+            
+            profileAvatar.src = photoURL;
+            profileName.textContent = displayName;
+            profileEmail.textContent = user.email;
+            displayNameInput.value = displayName;
+        }
+
+        // Login with email/password
+        loginBtn.addEventListener('click', async () => {
+            const email = emailInput.value.trim();
+            const password = passwordInput.value.trim();
+            
+            if (!email || !password) {
+                showToast('Please enter both email and password', true);
+                return;
+            }
+            
+            toggleButtonLoading(loginBtn, true);
+            
+            try {
+                const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                showToast('Signed in successfully!');
+            } catch (error) {
+                let errorMessage = 'Login failed. ';
+                switch(error.code) {
+                    case 'auth/wrong-password':
+                        errorMessage += 'Incorrect password.';
+                        break;
+                    case 'auth/invalid-email':
+                        errorMessage += 'Invalid email address.';
+                        break;
+                    case 'auth/user-not-found':
+                        errorMessage += 'User not found.';
+                        break;
+                    case 'auth/user-disabled':
+                        errorMessage += 'User account disabled.';
+                        break;
+                    default:
+                        errorMessage += error.message;
+                }
+                showToast(errorMessage, true);
+            } finally {
+                toggleButtonLoading(loginBtn, false);
+            }
+        });
+
+        // Register new account
+        registerBtn.addEventListener('click', async () => {
+            const name = registerNameInput.value.trim();
+            const email = registerEmailInput.value.trim();
+            const password = registerPasswordInput.value.trim();
+            const confirm = registerConfirmInput.value.trim();
+            
+            if (!name) {
+                showToast('Please enter your full name', true);
+                return;
+            }
+            
+            if (!email) {
+                showToast('Please enter your email', true);
+                return;
+            }
+            
+            if (!password || !confirm) {
+                showToast('Please enter and confirm your password', true);
+                return;
+            }
+            
+            if (password.length < 6) {
+                showToast('Password must be at least 6 characters', true);
+                return;
+            }
+            
+            if (password !== confirm) {
+                showToast('Passwords do not match', true);
+                return;
+            }
+            
+            toggleButtonLoading(registerBtn, true);
+            
+            try {
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                
+                // Update user profile with name
+                await userCredential.user.updateProfile({
+                    displayName: name
+                });
+                
+                showToast('Account created successfully!');
+                
+                // Clear form
+                registerNameInput.value = '';
+                registerEmailInput.value = '';
+                registerPasswordInput.value = '';
+                registerConfirmInput.value = '';
+                
+                // Switch to login form
+                showLoginForm();
+            } catch (error) {
+                let errorMessage = 'Registration failed. ';
+                switch(error.code) {
+                    case 'auth/email-already-in-use':
+                        errorMessage += 'Email already in use.';
+                        break;
+                    case 'auth/invalid-email':
+                        errorMessage += 'Invalid email address.';
+                        break;
+                    case 'auth/weak-password':
+                        errorMessage += 'Password is too weak.';
+                        break;
+                    default:
+                        errorMessage += error.message;
+                }
+                showToast(errorMessage, true);
+            } finally {
+                toggleButtonLoading(registerBtn, false);
+            }
+        });
+
+        // Sign in with Google
+        googleLoginBtn.addEventListener('click', async () => {
+            try {
+                const provider = new firebase.auth.GoogleAuthProvider();
+                await auth.signInWithPopup(provider);
+                showToast('Signed in with Google!');
+            } catch (error) {
+                showToast(`Google sign-in failed: ${error.message}`, true);
+            }
+        });
+
+        // Add new diary entry
+        addEntryBtn.addEventListener('click', async () => {
+            const content = newEntryInput.value.trim();
+            const date = entryDateInput.value;
+            const time = entryTimeInput.value;
+            const mood = entryMoodInput.value;
+            const weather = entryWeatherInput.value;
+            const tags = entryTagsInput.value;
+            
+            if (!content) {
+                showToast('Please write something in your diary entry', true);
+                return;
+            }
+            
+            if (!date || !time) {
+                showToast('Please select date and time', true);
+                return;
+            }
+            
+            toggleButtonLoading(addEntryBtn, true);
+            
+            try {
+                const user = auth.currentUser;
+                if (!user) throw new Error('User not authenticated');
+                
+                // Create date in local time
+                const dateTimeLocal = new Date(`${date}T${time}:00`);
+                const timestamp = dateTimeLocal.getTime();
+                
+                const entryData = {
+                    content: content,
+                    timestamp: timestamp
+                };
+                
+                if (mood) entryData.mood = mood;
+                if (weather) entryData.weather = weather;
+                if (tags) entryData.tags = tags;
+                
+                const newEntryRef = database.ref(`diaryEntries/${user.uid}`).push();
+                await newEntryRef.set(entryData);
+                
+                // Reset form
+                newEntryInput.value = '';
+                entryMoodInput.value = '';
+                entryWeatherInput.value = '';
+                entryTagsInput.value = '';
+                
+                showToast('Entry added successfully!');
+            } catch (error) {
+                showToast(`Failed to add entry: ${error.message}`, true);
+            } finally {
+                toggleButtonLoading(addEntryBtn, false);
+            }
+        });
+
+        // Logout
+        logoutBtn.addEventListener('click', () => {
+            auth.signOut();
+            showToast('You have been signed out');
+        });
+
+        // Profile photo upload
+        profileAvatar.addEventListener('click', () => {
+            avatarUpload.click();
+        });
+
+        avatarUpload.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const base64String = event.target.result;
+                    profileAvatar.src = base64String;
+                    showToast('Profile photo updated!');
+                    
+                    // Save to Firebase
+                    const user = auth.currentUser;
+                    if (user) {
+                        database.ref(`users/${user.uid}/photo`).set(base64String);
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Save profile
+        saveProfileBtn.addEventListener('click', async () => {
+            const user = auth.currentUser;
+            if (!user) return;
+            
+            toggleButtonLoading(saveProfileBtn, true);
+            
+            try {
+                const displayName = displayNameInput.value.trim();
+                
+                await user.updateProfile({
+                    displayName: displayName
+                });
+                
+                updateProfileDisplay(user);
+                showToast('Profile updated successfully!');
+            } catch (error) {
+                showToast(`Failed to update profile: ${error.message}`, true);
+            } finally {
+                toggleButtonLoading(saveProfileBtn, false);
+            }
+        });
+
+        // Calendar functions
+        openCalendarBtn.addEventListener('click', () => {
+            calendarModal.style.display = 'flex';
+            renderCalendar();
+        });
+
+        closeModalBtn.addEventListener('click', () => {
+            calendarModal.style.display = 'none';
+        });
+
+        prevMonthBtn.addEventListener('click', () => {
+            currentCalendarMonth--;
+            if (currentCalendarMonth < 0) {
+                currentCalendarMonth = 11;
+                currentCalendarYear--;
+            }
+            renderCalendar();
+        });
+
+        nextMonthBtn.addEventListener('click', () => {
+            currentCalendarMonth++;
+            if (currentCalendarMonth > 11) {
+                currentCalendarMonth = 0;
+                currentCalendarYear++;
+            }
+            renderCalendar();
+        });
+
+        function renderCalendar() {
+            const monthNames = ["January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"];
+            
+            calendarMonthEl.textContent = `${monthNames[currentCalendarMonth]} ${currentCalendarYear}`;
+            
+            // Get first day of month and number of days
+            const firstDay = new Date(currentCalendarYear, currentCalendarMonth, 1);
+            const lastDay = new Date(currentCalendarYear, currentCalendarMonth + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            
+            // Get day of week for first day (0 = Sunday, 1 = Monday, etc.)
+            const firstDayOfWeek = firstDay.getDay();
+            
+            calendarGrid.innerHTML = '';
+            
+            // Add empty cells for days before the first day of the month
+            for (let i = 0; i < firstDayOfWeek; i++) {
+                const emptyCell = document.createElement('div');
+                emptyCell.className = 'calendar-day';
+                calendarGrid.appendChild(emptyCell);
+            }
+            
+            // Add cells for each day of the month
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayCell = document.createElement('div');
+                dayCell.className = 'calendar-day';
+                dayCell.textContent = day;
+                
+                // Check if this day has entries
+                const cellDate = new Date(currentCalendarYear, currentCalendarMonth, day);
+                const start = getStartOfDayIST(cellDate);
+                const end = getEndOfDayIST(cellDate);
+                
+                if (userEntries.some(entry => entry.timestamp >= start && entry.timestamp <= end)) {
+                    dayCell.classList.add('has-entry');
+                }
+                
+                // Highlight current day
+                if (currentCalendarYear === nowIST.getFullYear() && 
+                    currentCalendarMonth === nowIST.getMonth() && 
+                    day === nowIST.getDate()) {
+                    dayCell.classList.add('active');
+                }
+                
+                dayCell.addEventListener('click', () => {
+                    currentViewDate = new Date(currentCalendarYear, currentCalendarMonth, day);
+                    currentDateText.textContent = formatDateIST(currentViewDate);
+                    filterEntriesByDate(currentViewDate);
+                    calendarModal.style.display = 'none';
+                });
+                
+                calendarGrid.appendChild(dayCell);
+            }
+        }
+
+        // Firebase Auth State Listener
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                // User is signed in
+                authScreen.style.display = 'none';
+                appContent.style.display = 'block';
+                
+                // Update profile display
+                updateProfileDisplay(user);
+                
+                // Load profile photo if exists
+                database.ref(`users/${user.uid}/photo`).on('value', (snapshot) => {
+                    if (snapshot.exists()) {
+                        profileAvatar.src = snapshot.val();
+                    }
+                });
+                
+                // Load diary entries
+                const entriesRef = database.ref(`diaryEntries/${user.uid}`);
+                entriesRef.on('value', (snapshot) => {
+                    renderEntries(snapshot.val());
+                });
+            } else {
+                // User is signed out
+                authScreen.style.display = 'block';
+                appContent.style.display = 'none';
+                emailInput.value = '';
+                passwordInput.value = '';
+                registerNameInput.value = '';
+                registerEmailInput.value = '';
+                registerPasswordInput.value = '';
+                registerConfirmInput.value = '';
+            }
+        });
+
+        // Press Enter to submit new entry
+        newEntryInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                addEntryBtn.click();
+            }
+        });
+
+        // Close modal when clicking outside
+        window.addEventListener('click', (e) => {
+            if (e.target === calendarModal) {
+                calendarModal.style.display = 'none';
+            }
+        });
+
+        // Initialize with today's date
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set initial date display
+            currentDateText.textContent = formatDateIST(currentViewDate);
+            showLoginForm();
+            createParticles();
+        });
+    </script>
+</body>
+</html>
